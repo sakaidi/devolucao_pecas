@@ -70,7 +70,7 @@
 
     canvas {
       display: block;
-      width: 100%;
+      width: auto;
       margin-bottom: 10px;
       border: 1px solid #ccc;
       border-radius: 4px;
@@ -260,9 +260,7 @@
       event.preventDefault();
     }
 
-    // Desabilita a rolagem diagonal
-    window.addEventListener("scroll", function (e) {
-      window.scrollTo(0, window.pageYOffset);
+   
 
       // Desabilita o comportamento padrão do evento de toque
       document.addEventListener("touchmove", function (e) {
