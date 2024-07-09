@@ -9,7 +9,7 @@
       crossorigin="anonymous"
     ></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
-    <style>
+      <style>
       /* Reset básico para remover margens e paddings padrão */
       * {
         margin: 0;
@@ -103,6 +103,13 @@
 
         canvas {
           height: 100px; /* Ajuste conforme necessário */
+        }
+      }
+
+      /* Media query para dispositivos em orientação paisagem */
+      @media screen and (orientation: landscape) {
+        canvas {
+          height: 150px; /* Ajuste conforme necessário para paisagem */
         }
       }
     </style>
