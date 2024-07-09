@@ -209,8 +209,8 @@
       doc.text("Assinatura Recebedor: ", 10, 160);
 
       // Adicionar a assinatura ao PDF
-      var signatureData = canvas.toDataURL();
-      doc.addImage(signatureData, "PNG", 10, 170, 180, 50);
+      var imgData = canvas.toDataURL("image/jpeg", 1.0);
+      doc.addImage(imgData, "JPEG", 10, 170, 180, 50);
 
       // Gerar o PDF
       doc.save("formulario_entrega_pecas.pdf");
@@ -226,17 +226,17 @@
     canvas.addEventListener("touchend", stopDrawing);
     canvas.addEventListener("touchcancel", stopDrawing);
 
-    function getTouchPos(canvasDom, touchEvent) {
+    function getMousePos(canvasDom, mouseEvent) {
       var rect = canvasDom.getBoundingClientRect();
       return {
-        x: touchEvent.touches[0].clientX - rect.left,
-        y: touchEvent.touches[0].clientY - rect.top
+        x: mouseEvent.clientX - rect.left,
+        y: mouseEvent.clientY - rect.top
       };
     }
 
     function startDrawing(event) {
       isDrawing = true;
-      var pos = event.type.includes('touch') ? getTouchPos(canvas, event) : {x: event.clientX - canvas.offsetLeft, y: event.clientY - canvas.offsetTop};
+      var pos = event.type.includes('touch') ? getTouchPos(canvas, event) : getMousePos(canvas, event);
       ctx.beginPath();
       ctx.moveTo(pos.x, pos.y);
       event.preventDefault();
@@ -244,7 +244,7 @@
 
     function draw(event) {
       if (isDrawing) {
-        var pos = event.type.includes('touch') ? getTouchPos(canvas, event) : {x: event.clientX - canvas.offsetLeft, y: event.clientY - canvas.offsetTop};
+        var pos = event.type.includes('touch') ? getTouchPos(canvas, event) : getMousePos(canvas, event);
         ctx.lineTo(pos.x, pos.y);
         ctx.stroke();
       }
@@ -261,8 +261,8 @@
     }
 
     // Desabilita a rolagem diagonal
-    // window.addEventListener("scroll", function (e) {
-    //   window.scrollTo(0, window.pageYOffset);
+    window.addEventListener("scroll", function (e) {
+      window.scrollTo(0, window.pageYOffset);
 
       // Desabilita o comportamento padrão do evento de toque
       document.addEventListener("touchmove", function (e) {
