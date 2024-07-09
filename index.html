@@ -102,18 +102,19 @@
         }
 
         canvas {
-          height: 100px;
-          /* Ajuste conforme necessário */
+          height: 100px; /* Ajuste conforme necessário */
         }
       }
 
       /* Media query para dispositivos em orientação paisagem */
       @media screen and (orientation: landscape) {
         canvas {
-          height: 150px;
-          /* Ajuste conforme necessário para paisagem */
+          width: 50%; /* Ajuste conforme necessário para paisagem */
+          height: auto;
         }
       }
+
+      /* Estilos para o rodapé */
       footer {
         text-align: center;
         margin-top: 20px;
@@ -124,7 +125,6 @@
       }
     </style>
   </head>
-
   <body>
     <h1>Formulário de Entrega de Peças</h1>
 
@@ -156,6 +156,9 @@
 
       <button type="button" onclick="generatePDF()">Gerar PDF</button>
     </form>
+
+    <!-- Rodapé -->
+    <footer>&copy; 2024 Seu Nome. Todos os direitos reservados.</footer>
 
     <script>
       var canvas = document.getElementById("signatureCanvas");
@@ -265,11 +268,12 @@
 
       function startDrawing(event) {
         isDrawing = true;
+        var rect = canvas.getBoundingClientRect();
         var pos = event.type.includes("touch")
           ? getTouchPos(canvas, event)
           : {
-              x: event.clientX - canvas.offsetLeft,
-              y: event.clientY - canvas.offsetTop,
+              x: ((event.clientX - rect.left) / rect.width) * canvas.width,
+              y: ((event.clientY - rect.top) / rect.height) * canvas.height,
             };
         ctx.beginPath();
         ctx.moveTo(pos.x, pos.y);
@@ -278,11 +282,12 @@
 
       function draw(event) {
         if (isDrawing) {
+          var rect = canvas.getBoundingClientRect();
           var pos = event.type.includes("touch")
             ? getTouchPos(canvas, event)
             : {
-                x: event.clientX - canvas.offsetLeft,
-                y: event.clientY - canvas.offsetTop,
+                x: ((event.clientX - rect.left) / rect.width) * canvas.width,
+                y: ((event.clientY - rect.top) / rect.height) * canvas.height,
               };
           ctx.lineTo(pos.x, pos.y);
           ctx.stroke();
@@ -298,22 +303,6 @@
         }
         event.preventDefault();
       }
-
-      // Desabilita a rolagem diagonal
-      window.addEventListener("scroll", function (e) {
-        window.scrollTo(0, window.pageYOffset);
-
-        // Desabilita o comportamento padrão do evento de toque
-        document.addEventListener(
-          "touchmove",
-          function (e) {
-            e.preventDefault();
-          },
-          { passive: false }
-        );
-      });
     </script>
-    <!-- Rodapé -->
-    <footer>&copy; 2024 Diego Sakai. Todos os direitos reservados.</footer>
   </body>
 </html>
