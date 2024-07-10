@@ -43,7 +43,8 @@
         font-weight: bold;
       }
 
-      input[type="text"] {
+      input[type="text"],
+      input[type="date"] {
         width: 100%;
         padding: 10px;
         margin-bottom: 10px;
@@ -68,10 +69,22 @@
         background-color: #0056b3;
       }
 
-      ul {
-        list-style-type: none;
-        padding: 0;
+      table {
+        width: 100%;
         margin-bottom: 10px;
+        border-collapse: collapse;
+      }
+
+      table,
+      th,
+      td {
+        border: 1px solid #ccc;
+      }
+
+      th,
+      td {
+        padding: 8px;
+        text-align: left;
       }
 
       canvas {
@@ -82,7 +95,6 @@
         border-radius: 4px;
       }
 
-      /* Estilos específicos para iPhone SE */
       @media (max-width: 375px) {
         h1 {
           font-size: 1.2em;
@@ -92,7 +104,8 @@
           padding: 15px;
         }
 
-        input[type="text"] {
+        input[type="text"],
+        input[type="date"] {
           padding: 8px;
         }
 
@@ -102,19 +115,17 @@
         }
 
         canvas {
-          height: 100px; /* Ajuste conforme necessário */
+          height: 100px;
         }
       }
 
-      /* Media query para dispositivos em orientação paisagem */
       @media screen and (orientation: landscape) {
         canvas {
-          width: 50%; /* Ajuste conforme necessário para paisagem */
+          width: 50%;
           height: auto;
         }
       }
 
-      /* Estilos para o rodapé */
       footer {
         text-align: center;
         margin-top: 20px;
@@ -130,7 +141,7 @@
 
     <form id="deliveryForm">
       <label for="data">Data:</label>
-      <input type="text" id="data" name="data" required />
+      <input type="date" id="data" name="data" required />
 
       <label for="nomeRecebedor">Nome do Recebedor:</label>
       <input type="text" id="nomeRecebedor" name="nomeRecebedor" required />
@@ -138,15 +149,21 @@
       <label for="nomeTecnico">Nome Técnico:</label>
       <input type="text" id="nomeTecnico" name="nomeTecnico" required />
 
-      <label for="serialProxxi">Serial Proxxi:</label>
-      <input type="text" id="serialProxxi" name="serialProxxi" />
-      <button type="button" onclick="addSerial()">Adicionar</button>
-      <ul id="serialList"></ul>
-
-      <label for="notaFiscal">Nota Fiscal:</label>
-      <input type="text" id="notaFiscal" name="notaFiscal" />
-      <button type="button" onclick="addNotaFiscal()">Adicionar</button>
-      <ul id="notaFiscalList"></ul>
+      <h3>Código, Número de Série, Nota Fiscal:</h3>
+      <table id="serialTable">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Número de Série</th>
+            <th>Nota Fiscal</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <input type="text" id="codigoPeca" placeholder="Código da Peça" />
+      <input type="text" id="serialProxxi" placeholder="Número de Série" />
+      <input type="text" id="notaFiscal" placeholder="Nota Fiscal" />
+      <button type="button" onclick="addRow()">Adicionar</button>
 
       <label for="assinatura">Assinatura Recebedor:</label>
       <canvas id="signatureCanvas" width="300" height="150"></canvas>
@@ -157,7 +174,6 @@
       <button type="button" onclick="generatePDF()">Gerar PDF</button>
     </form>
 
-    <!-- Rodapé -->
     <footer>&copy; 2024 Diego Sakai. Todos os direitos reservados.</footer>
 
     <script>
@@ -165,90 +181,93 @@
       var ctx = canvas.getContext("2d");
       var isDrawing = false;
 
-      // Função para adicionar valores de Serial Proxxi
-      function addSerial() {
+      function addRow() {
+        var codigoPecaInput = document.getElementById("codigoPeca");
         var serialInput = document.getElementById("serialProxxi");
-        var serialList = document.getElementById("serialList");
-        var serialValue = serialInput.value;
-
-        if (serialValue !== "") {
-          var listItem = document.createElement("li");
-          listItem.textContent = serialValue;
-          serialList.appendChild(listItem);
-          serialInput.value = "";
-        }
-      }
-
-      // Função para adicionar valores de Nota Fiscal
-      function addNotaFiscal() {
         var notaFiscalInput = document.getElementById("notaFiscal");
-        var notaFiscalList = document.getElementById("notaFiscalList");
-        var notaFiscalValue = notaFiscalInput.value;
+        var serialTable = document
+          .getElementById("serialTable")
+          .getElementsByTagName("tbody")[0];
 
-        if (notaFiscalValue !== "") {
-          var listItem = document.createElement("li");
-          listItem.textContent = notaFiscalValue;
-          notaFiscalList.appendChild(listItem);
+        if (
+          codigoPecaInput.value !== "" &&
+          serialInput.value !== "" &&
+          notaFiscalInput.value !== ""
+        ) {
+          var newRow = serialTable.insertRow();
+          var codigoCell = newRow.insertCell(0);
+          var serialCell = newRow.insertCell(1);
+          var notaFiscalCell = newRow.insertCell(2);
+
+          codigoCell.textContent = codigoPecaInput.value;
+          serialCell.textContent = serialInput.value;
+          notaFiscalCell.textContent = notaFiscalInput.value;
+
+          codigoPecaInput.value = "";
+          serialInput.value = "";
           notaFiscalInput.value = "";
         }
       }
 
-      // Função para limpar a assinatura
       function clearSignature() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
       }
 
-      // Função para gerar o PDF após preencher o formulário
       function generatePDF() {
-        // Criar um novo objeto jsPDF
         var doc = new jsPDF({
-          format: "letter", // Tamanho personalizado (metade de uma folha A4)
-          orientation: "portrait", // Orientação retrato
+          format: "letter",
+          orientation: "portrait",
         });
 
-        // Obter os valores dos campos do formulário
         var data = document.getElementById("data").value;
         var nomeRecebedor = document.getElementById("nomeRecebedor").value;
         var nomeTecnico = document.getElementById("nomeTecnico").value;
 
-        // Obter os valores dos campos de número de série
-        var serialListItems = document.querySelectorAll("#serialList li");
-        var serialValues = Array.from(serialListItems).map(function (item) {
-          return item.textContent;
-        });
+        var serialTable = document
+          .getElementById("serialTable")
+          .getElementsByTagName("tbody")[0];
 
-        // Obter os valores dos campos de nota fiscal
-        var notaFiscalListItems =
-          document.querySelectorAll("#notaFiscalList li");
-        var notaFiscalValues = Array.from(notaFiscalListItems).map(function (
-          item
-        ) {
-          return item.textContent;
-        });
+        var rows = [];
+        for (var i = 0, row; (row = serialTable.rows[i]); i++) {
+          rows.push({
+            codigo: row.cells[0].textContent,
+            serial: row.cells[1].textContent,
+            notaFiscal: row.cells[2].textContent,
+          });
+        }
 
-        // Adicionar os valores de número de série ao PDF
-        doc.text("Número de Série:", 10, 100);
-        doc.text(serialValues.join(", "), 10, 110);
-
-        // Adicionar os valores de nota fiscal ao PDF
-        doc.text("Nota Fiscal:", 10, 130);
-        doc.text(notaFiscalValues.join(", "), 10, 140);
-
-        // Adicionar os valores ao PDF
         doc.text("Data: " + data, 10, 10);
         doc.text("Nome do Recebedor: " + nomeRecebedor, 10, 20);
         doc.text("Nome Técnico: " + nomeTecnico, 10, 30);
-        doc.text("Assinatura Recebedor: ", 10, 160);
 
-        // Adicionar a assinatura ao PDF
+        var y = 40;
+        doc.text("Código, Número de Série, Nota Fiscal:", 10, y);
+        y += 10;
+        rows.forEach(function (item) {
+          doc.text(
+            item.codigo + " - " + item.serial + " - " + item.notaFiscal,
+            10,
+            y
+          );
+          y += 10;
+        });
+
+        y += 10;
+        doc.text("Assinatura Recebedor:", 10, y);
+
         var signatureData = canvas.toDataURL();
-        doc.addImage(signatureData, "PNG", 10, 160, 100, 50);
+        doc.addImage(signatureData, "PNG", 10, y + 10, 100, 50);
 
-        // Gerar o PDF
-        doc.save("formulario_entrega_pecas.pdf");
+        var now = new Date();
+        var timestamp = now
+          .toISOString()
+          .replace(/[:\-]/g, "")
+          .replace(/\..*$/, "")
+          .replace("T", "_");
+
+        doc.save("formulario_entrega_pecas_" + timestamp + ".pdf");
       }
 
-      // Funções para desenhar a assinatura
       canvas.addEventListener("mousedown", startDrawing);
       canvas.addEventListener("mousemove", draw);
       canvas.addEventListener("mouseup", stopDrawing);
@@ -261,19 +280,26 @@
       function getTouchPos(canvasDom, touchEvent) {
         var rect = canvasDom.getBoundingClientRect();
         return {
-          x: touchEvent.touches[0].clientX - rect.left,
-          y: touchEvent.touches[0].clientY - rect.top,
+          x:
+            ((touchEvent.touches[0].clientX - rect.left) / rect.width) *
+            canvasDom.width,
+          y:
+            ((touchEvent.touches[0].clientY - rect.top) / rect.height) *
+            canvasDom.height,
         };
       }
 
       function startDrawing(event) {
         isDrawing = true;
-        var rect = canvas.getBoundingClientRect();
         var pos = event.type.includes("touch")
           ? getTouchPos(canvas, event)
           : {
-              x: ((event.clientX - rect.left) / rect.width) * canvas.width,
-              y: ((event.clientY - rect.top) / rect.height) * canvas.height,
+              x:
+                ((event.clientX - canvas.offsetLeft) / canvas.clientWidth) *
+                canvas.width,
+              y:
+                ((event.clientY - canvas.offsetTop) / canvas.clientHeight) *
+                canvas.height,
             };
         ctx.beginPath();
         ctx.moveTo(pos.x, pos.y);
@@ -282,12 +308,15 @@
 
       function draw(event) {
         if (isDrawing) {
-          var rect = canvas.getBoundingClientRect();
           var pos = event.type.includes("touch")
             ? getTouchPos(canvas, event)
             : {
-                x: ((event.clientX - rect.left) / rect.width) * canvas.width,
-                y: ((event.clientY - rect.top) / rect.height) * canvas.height,
+                x:
+                  ((event.clientX - canvas.offsetLeft) / canvas.clientWidth) *
+                  canvas.width,
+                y:
+                  ((event.clientY - canvas.offsetTop) / canvas.clientHeight) *
+                  canvas.height,
               };
           ctx.lineTo(pos.x, pos.y);
           ctx.stroke();
