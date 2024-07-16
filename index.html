@@ -307,6 +307,14 @@
             Quagga.start();
           }
         );
+
+        Quagga.onDetected(function (result) {
+          var codigoLido = result.codeResult.code;
+          document.getElementById(idCampo).value = codigoLido;
+
+          // Parar a leitura após detectar um código
+          Quagga.stop();
+        });
       }
 
       function generatePDF() {
