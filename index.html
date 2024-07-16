@@ -159,16 +159,35 @@
         </thead>
         <tbody></tbody>
       </table>
-      <input type="text" id="codigoPeca" placeholder="Código da Peça" />
-      <button onclick="iniciarLeituraCodigo()">Ler Código</button>
-      <div id="camera-preview" style="width: 100%; height: auto"></div>
-      <input type="text" id="serialProxxi" placeholder="Número de Série" />
-      <button onclick="iniciarLeituraCodigo()">Ler Código</button>
-      <div id="camera-preview" style="width: 100%; height: auto"></div>
+      <div>
+        <input type="text" id="codigoPeca" placeholder="Código da Peça" />
+        <button onclick="iniciarLeituraCodigo('codigoPeca')">Ler Código</button>
+      </div>
+      <div
+        id="camera-preview-codigoPeca"
+        style="width: 100%; height: auto"
+      ></div>
 
-      <input type="text" id="notaFiscal" placeholder="Nota Fiscal" />
-      <button onclick="iniciarLeituraCodigo()">Ler Código</button>
-      <div id="camera-preview" style="width: 100%; height: auto"></div>
+      <div>
+        <input type="text" id="serialProxxi" placeholder="Número de Série" />
+        <button onclick="iniciarLeituraCodigo('serialProxxi')">
+          Ler Código
+        </button>
+      </div>
+      <div
+        id="camera-preview-serialProxxi"
+        style="width: 100%; height: auto"
+      ></div>
+
+      <div>
+        <input type="text" id="notaFiscal" placeholder="Nota Fiscal" />
+        <button onclick="iniciarLeituraCodigo('notaFiscal')">Ler Código</button>
+      </div>
+      <div
+        id="camera-preview-notaFiscal"
+        style="width: 100%; height: auto"
+      ></div>
+
       <button type="button" onclick="addRow()">Adicionar</button>
 
       <label for="assinatura">Assinatura Recebedor:</label>
@@ -251,13 +270,13 @@
         ctx.clearRect(0, 0, canvas.width, canvas.height);
       }
 
-      function iniciarLeituraCodigo() {
+      function iniciarLeituraCodigo(idCampo) {
         Quagga.init(
           {
             inputStream: {
               name: "Live",
               type: "LiveStream",
-              target: document.querySelector("#camera-preview"),
+              target: document.querySelector("#camera-preview-" + idCampo),
               constraints: {
                 facingMode: "environment", // ou "user" para câmera frontal
               },
@@ -288,128 +307,41 @@
             Quagga.start();
           }
         );
-
-        Quagga.onDetected(function (result) {
-          var codigoLido = result.codeResult.code;
-          // Aqui você pode fazer o que desejar com o código lido, como preencher um campo de formulário
-          console.log("Código lido:", codigoLido);
-
-          // Parar a leitura após detectar um código
-          Quagga.stop();
-        });
       }
 
       function generatePDF() {
-        var doc = new jsPDF({
-          format: "letter",
-          orientation: "portrait",
+        var doc = new jsPDF();
+        doc.text("Formulário de Entrega de Peças", 15, 15);
+
+        var formData = new FormData(document.getElementById("deliveryForm"));
+        var formObject = {};
+        formData.forEach(function (value, key) {
+          formObject[key] = value;
         });
 
-        var data = document.getElementById("data").value;
-        var nomeRecebedor = document.getElementById("nomeRecebedor").value;
-        var nomeTecnico = document.getElementById("nomeTecnico").value;
+        var columns = [
+          { title: "Código", dataKey: "codigo" },
+          { title: "Número de Série", dataKey: "numeroSerie" },
+          { title: "Nota Fiscal", dataKey: "notaFiscal" },
+        ];
 
-        var serialTable = document.getElementById("serialTable");
         var rows = [];
-        for (var i = 0; i < serialTable.rows.length; i++) {
-          var row = [];
-          for (var j = 0; j < serialTable.rows[i].cells.length - 1; j++) {
-            row.push(serialTable.rows[i].cells[j].textContent);
-          }
-          rows.push(row);
+        var tableData = document
+          .getElementById("serialTable")
+          .getElementsByTagName("tbody")[0]
+          .getElementsByTagName("tr");
+
+        for (var i = 0; i < tableData.length; i++) {
+          var rowData = {};
+          var tableCols = tableData[i].getElementsByTagName("td");
+          rowData["codigo"] = tableCols[0].textContent;
+          rowData["numeroSerie"] = tableCols[1].textContent;
+          rowData["notaFiscal"] = tableCols[2].textContent;
+          rows.push(rowData);
         }
 
-        doc.text("Data: " + data, 10, 10);
-        doc.text("Nome do Recebedor: " + nomeRecebedor, 10, 20);
-        doc.text("Nome Técnico: " + nomeTecnico, 10, 30);
-
-        doc.autoTable({
-          startY: 40,
-          head: [["Código", "Número de Série", "Nota Fiscal"]],
-          body: rows,
-          didDrawCell: function (data) {
-            console.log(data.row.index + " " + data.cell.index);
-          },
-        });
-
-        var signatureData = canvas.toDataURL();
-        doc.addImage(signatureData, "PNG", 10, 200, 100, 50);
-
-        var currentDate = new Date();
-        var dateString = currentDate.toISOString().slice(0, 10);
-        var timeString = currentDate
-          .toTimeString()
-          .slice(0, 8)
-          .replace(/:/g, "-");
-
-        doc.save(
-          "formulario_entrega_pecas_" + dateString + "_" + timeString + ".pdf"
-        );
-      }
-
-      canvas.addEventListener("mousedown", startDrawing);
-      canvas.addEventListener("mousemove", draw);
-      canvas.addEventListener("mouseup", stopDrawing);
-      canvas.addEventListener("mouseout", stopDrawing);
-      canvas.addEventListener("touchstart", startDrawing);
-      canvas.addEventListener("touchmove", draw);
-      canvas.addEventListener("touchend", stopDrawing);
-      canvas.addEventListener("touchcancel", stopDrawing);
-
-      function getTouchPos(canvasDom, touchEvent) {
-        var rect = canvasDom.getBoundingClientRect();
-        return {
-          x:
-            ((touchEvent.touches[0].clientX - rect.left) / rect.width) *
-            canvasDom.width,
-          y:
-            ((touchEvent.touches[0].clientY - rect.top) / rect.height) *
-            canvasDom.height,
-        };
-      }
-
-      function startDrawing(event) {
-        isDrawing = true;
-        var pos = event.type.includes("touch")
-          ? getTouchPos(canvas, event)
-          : {
-              x:
-                ((event.clientX - canvas.offsetLeft) / canvas.clientWidth) *
-                canvas.width,
-              y:
-                ((event.clientY - canvas.offsetTop) / canvas.clientHeight) *
-                canvas.height,
-            };
-        ctx.beginPath();
-        ctx.moveTo(pos.x, pos.y);
-        event.preventDefault();
-      }
-
-      function draw(event) {
-        if (isDrawing) {
-          var pos = event.type.includes("touch")
-            ? getTouchPos(canvas, event)
-            : {
-                x:
-                  ((event.clientX - canvas.offsetLeft) / canvas.clientWidth) *
-                  canvas.width,
-                y:
-                  ((event.clientY - canvas.offsetTop) / canvas.clientHeight) *
-                  canvas.height,
-              };
-          ctx.lineTo(pos.x, pos.y);
-          ctx.stroke();
-          event.preventDefault();
-        }
-      }
-
-      function stopDrawing(event) {
-        if (isDrawing) {
-          ctx.stroke();
-          ctx.closePath();
-          isDrawing = false;
-        }
-        event.preventDefault();
+        doc.autoTable(columns, rows, { startY: 20 });
+        doc.save("form_entrega_pecas.pdf");
       }
     </script>
   </body>
