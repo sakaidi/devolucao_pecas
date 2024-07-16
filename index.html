@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
   <head>
-    <title>Formulário de Entrega de Peças</title>
+    <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Formulário de Entrega de Peças</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/quagga/dist/quagga.min.js"></script>
@@ -159,34 +160,35 @@
         </thead>
         <tbody></tbody>
       </table>
+
       <div>
         <input type="text" id="codigoPeca" placeholder="Código da Peça" />
         <button onclick="iniciarLeituraCodigo('codigoPeca')">Ler Código</button>
+        <div
+          id="camera-preview-codigoPeca"
+          style="width: 100%; height: auto"
+        ></div>
       </div>
-      <div
-        id="camera-preview-codigoPeca"
-        style="width: 100%; height: auto"
-      ></div>
 
       <div>
         <input type="text" id="serialProxxi" placeholder="Número de Série" />
         <button onclick="iniciarLeituraCodigo('serialProxxi')">
           Ler Código
         </button>
+        <div
+          id="camera-preview-serialProxxi"
+          style="width: 100%; height: auto"
+        ></div>
       </div>
-      <div
-        id="camera-preview-serialProxxi"
-        style="width: 100%; height: auto"
-      ></div>
 
       <div>
         <input type="text" id="notaFiscal" placeholder="Nota Fiscal" />
         <button onclick="iniciarLeituraCodigo('notaFiscal')">Ler Código</button>
+        <div
+          id="camera-preview-notaFiscal"
+          style="width: 100%; height: auto"
+        ></div>
       </div>
-      <div
-        id="camera-preview-notaFiscal"
-        style="width: 100%; height: auto"
-      ></div>
 
       <button type="button" onclick="addRow()">Adicionar</button>
 
@@ -276,7 +278,7 @@
             inputStream: {
               name: "Live",
               type: "LiveStream",
-              target: document.querySelector("#camera-preview-" + idCampo),
+              target: document.querySelector(`#camera-preview-${idCampo}`),
               constraints: {
                 facingMode: "environment", // ou "user" para câmera frontal
               },
