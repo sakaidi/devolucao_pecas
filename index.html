@@ -160,17 +160,15 @@
         <tbody></tbody>
       </table>
       <input type="text" id="codigoPeca" placeholder="Código da Peça" />
-      <button type="button" onclick="scanBarcode('codigoPeca')">
-        Ler Código
-      </button>
+      <button onclick="iniciarLeituraCodigo()">Ler Código</button>
+      <div id="camera-preview" style="width: 100%; height: auto"></div>
       <input type="text" id="serialProxxi" placeholder="Número de Série" />
-      <button type="button" onclick="scanBarcode('serialProxxi')">
-        Ler Código
-      </button>
+      <button onclick="iniciarLeituraCodigo()">Ler Código</button>
+      <div id="camera-preview" style="width: 100%; height: auto"></div>
+
       <input type="text" id="notaFiscal" placeholder="Nota Fiscal" />
-      <button type="button" onclick="scanBarcode('notaFiscal')">
-        Ler Código
-      </button>
+      <button onclick="iniciarLeituraCodigo()">Ler Código</button>
+      <div id="camera-preview" style="width: 100%; height: auto"></div>
       <button type="button" onclick="addRow()">Adicionar</button>
 
       <label for="assinatura">Assinatura Recebedor:</label>
@@ -253,15 +251,20 @@
         ctx.clearRect(0, 0, canvas.width, canvas.height);
       }
 
-      function scanBarcode(inputId) {
-        var inputElement = document.getElementById(inputId);
+      function iniciarLeituraCodigo() {
         Quagga.init(
           {
             inputStream: {
+              name: "Live",
               type: "LiveStream",
+              target: document.querySelector("#camera-preview"),
               constraints: {
-                facingMode: "environment",
+                facingMode: "environment", // ou "user" para câmera frontal
               },
+            },
+            locator: {
+              patchSize: "medium",
+              halfSample: true,
             },
             decoder: {
               readers: [
@@ -287,7 +290,11 @@
         );
 
         Quagga.onDetected(function (result) {
-          inputElement.value = result.codeResult.code;
+          var codigoLido = result.codeResult.code;
+          // Aqui você pode fazer o que desejar com o código lido, como preencher um campo de formulário
+          console.log("Código lido:", codigoLido);
+
+          // Parar a leitura após detectar um código
           Quagga.stop();
         });
       }
