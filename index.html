@@ -185,7 +185,7 @@
       <button type="button" onclick="generatePDF()">Gerar PDF</button>
     </form>
 
-    <footer>&copy; 2024 Diego Sakai. Todos os direitos reservados.</footer>
+    <footer>&copy; 2024 Seu Nome. Todos os direitos reservados.</footer>
 
     <script>
       var canvas = document.getElementById("signatureCanvas");
@@ -278,11 +278,11 @@
           .getElementsByTagName("tbody")[0];
         var rows = [];
         for (var i = 0, row; (row = serialTable.rows[i]); i++) {
-          rows.push({
-            codigo: row.cells[0].textContent,
-            serial: row.cells[1].textContent,
-            notaFiscal: row.cells[2].textContent,
-          });
+          rows.push([
+            row.cells[0].textContent,
+            row.cells[1].textContent,
+            row.cells[2].textContent,
+          ]);
         }
 
         doc.text("Data: " + data, 10, 10);
@@ -294,9 +294,7 @@
         doc.autoTable({
           startY: startY,
           head: [["Código", "Número de Série", "Nota Fiscal"]],
-          body: rows.map(function (row) {
-            return [row.codigo, row.serial, row.notaFiscal];
-          }),
+          body: rows,
         });
 
         var signatureData = canvas.toDataURL();
