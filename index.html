@@ -154,6 +154,7 @@
             <th>Código</th>
             <th>Número de Série</th>
             <th>Nota Fiscal</th>
+            <th>Ações</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -181,7 +182,9 @@
       <button type="button" onclick="generatePDF()">Gerar PDF</button>
     </form>
 
-    <footer>&copy; 2024 Diego Sakai. Todos os direitos reservados.</footer>
+    <footer>
+      &copy; 2024 Diego Sakai & Cláudio Henrique. Todos os direitos reservados.
+    </footer>
 
     <script>
       const { jsPDF } = window.jspdf;
@@ -207,15 +210,43 @@
           var codigoCell = newRow.insertCell(0);
           var serialCell = newRow.insertCell(1);
           var notaFiscalCell = newRow.insertCell(2);
+          var actionsCell = newRow.insertCell(3);
 
           codigoCell.textContent = codigoPecaInput.value;
           serialCell.textContent = serialInput.value;
           notaFiscalCell.textContent = notaFiscalInput.value;
 
+          var editButton = document.createElement("button");
+          editButton.textContent = "Editar";
+          editButton.onclick = function () {
+            editRow(newRow);
+          };
+          actionsCell.appendChild(editButton);
+
+          var deleteButton = document.createElement("button");
+          deleteButton.textContent = "Excluir";
+          deleteButton.onclick = function () {
+            deleteRow(newRow);
+          };
+          actionsCell.appendChild(deleteButton);
+
           codigoPecaInput.value = "";
           serialInput.value = "";
           notaFiscalInput.value = "";
         }
+      }
+
+      function editRow(row) {
+        var cells = row.getElementsByTagName("td");
+        document.getElementById("codigoPeca").value = cells[0].textContent;
+        document.getElementById("serialProxxi").value = cells[1].textContent;
+        document.getElementById("notaFiscal").value = cells[2].textContent;
+
+        row.parentNode.removeChild(row);
+      }
+
+      function deleteRow(row) {
+        row.parentNode.removeChild(row);
       }
 
       function clearSignature() {
@@ -271,16 +302,14 @@
         var nomeRecebedor = document.getElementById("nomeRecebedor").value;
         var nomeTecnico = document.getElementById("nomeTecnico").value;
 
-        var serialTable = document
-          .getElementById("serialTable")
-          .getElementsByTagName("tbody")[0];
+        var serialTable = document.getElementById("serialTable");
         var rows = [];
-        for (var i = 0, row; (row = serialTable.rows[i]); i++) {
-          rows.push([
-            row.cells[0].textContent,
-            row.cells[1].textContent,
-            row.cells[2].textContent,
-          ]);
+        for (var i = 0; i < serialTable.rows.length; i++) {
+          var row = [];
+          for (var j = 0; j < serialTable.rows[i].cells.length - 1; j++) {
+            row.push(serialTable.rows[i].cells[j].textContent);
+          }
+          rows.push(row);
         }
 
         doc.text("Data: " + data, 10, 10);
