@@ -1,381 +1,366 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Formulário de Entrega de Peças</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/quagga/dist/quagga.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
-    <style>
-      /* Reset básico para remover margens e paddings padrão */
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Formulário de Entrega de Peças</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/quagga/dist/quagga.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
+  <style>
+    /* Reset básico para remover margens e paddings padrão */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-      body {
-        font-family: Arial, sans-serif;
-        background-color: #f5f5f5;
-        color: #333;
-        padding: 10px;
-      }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      color: #333;
+      padding: 10px;
+    }
 
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 1.5em;
+    }
+
+    form {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    input[type="text"],
+    input[type="date"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 1em;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    table {
+      width: 100%;
+      margin-bottom: 10px;
+      border-collapse: collapse;
+    }
+
+    table,
+    th,
+    td {
+      border: 1px solid #ccc;
+    }
+
+    th,
+    td {
+      padding: 8px;
+      text-align: left;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: white;
+      padding: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      z-index: 9999;
+      max-width: 240px; /* Tamanho máximo do pop-up */
+      width: 100%; /* Garante que ocupa toda a largura disponível */
+    }
+
+    .popup-content {
+      text-align: center;
+    }
+
+    @media (max-width: 375px) {
       h1 {
-        text-align: center;
-        margin-bottom: 20px;
-        font-size: 1.5em;
+        font-size: 1.2em;
       }
 
       form {
-        background: #fff;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      }
-
-      label {
-        display: block;
-        margin-bottom: 5px;
-        font-weight: bold;
+        padding: 15px;
       }
 
       input[type="text"],
       input[type="date"] {
-        width: 100%;
-        padding: 10px;
-        margin-bottom: 10px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
+        padding: 8px;
       }
 
       button {
-        display: block;
-        width: 100%;
-        padding: 10px;
-        margin-bottom: 10px;
-        background-color: #007bff;
-        color: #fff;
-        border: none;
-        border-radius: 4px;
-        font-size: 1em;
-        cursor: pointer;
-      }
-
-      button:hover {
-        background-color: #0056b3;
-      }
-
-      table {
-        width: 100%;
-        margin-bottom: 10px;
-        border-collapse: collapse;
-      }
-
-      table,
-      th,
-      td {
-        border: 1px solid #ccc;
-      }
-
-      th,
-      td {
         padding: 8px;
-        text-align: left;
+        font-size: 0.9em;
       }
 
       canvas {
-        display: block;
-        width: 100%;
-        margin-bottom: 10px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
+        height: 100px;
       }
+    }
 
-      .popup {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background-color: white;
-        padding: 10px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        z-index: 9999;
-        max-width: 240px; /* Tamanho máximo do pop-up */
-        width: 100%; /* Garante que ocupa toda a largura disponível */
+    @media screen and (orientation: landscape) {
+      canvas {
+        width: 50%;
+        height: auto;
       }
+    }
 
-      .popup-content {
-        text-align: center;
-      }
+    footer {
+      text-align: center;
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #f0f0f0;
+      border-top: 1px solid #ccc;
+      font-size: 0.8em;
+    }
+  </style>
+</head>
+<body>
+  <h1>Formulário de Entrega de Peças</h1>
 
-      @media (max-width: 375px) {
-        h1 {
-          font-size: 1.2em;
-        }
+  <form id="deliveryForm">
+    <label for="data">Data:</label>
+    <input type="date" id="data" name="data" required />
 
-        form {
-          padding: 15px;
-        }
+    <label for="nomeRecebedor">Nome do Recebedor:</label>
+    <input type="text" id="nomeRecebedor" name="nomeRecebedor" required />
 
-        input[type="text"],
-        input[type="date"] {
-          padding: 8px;
-        }
+    <label for="nomeTecnico">Nome Técnico:</label>
+    <input type="text" id="nomeTecnico" name="nomeTecnico" required />
 
-        button {
-          padding: 8px;
-          font-size: 0.9em;
-        }
+    <h3>Código, Número de Série, Nota Fiscal:</h3>
+    <table id="serialTable">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Número de Série</th>
+          <th>Nota Fiscal</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
 
-        canvas {
-          height: 100px;
-        }
-      }
-
-      @media screen and (orientation: landscape) {
-        canvas {
-          width: 50%;
-          height: auto;
-        }
-      }
-
-      footer {
-        text-align: center;
-        margin-top: 20px;
-        padding: 10px;
-        background-color: #f0f0f0;
-        border-top: 1px solid #ccc;
-        font-size: 0.8em;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>Formulário de Entrega de Peças</h1>
-
-    <form id="deliveryForm">
-      <label for="data">Data:</label>
-      <input type="date" id="data" name="data" required />
-
-      <label for="nomeRecebedor">Nome do Recebedor:</label>
-      <input type="text" id="nomeRecebedor" name="nomeRecebedor" required />
-
-      <label for="nomeTecnico">Nome Técnico:</label>
-      <input type="text" id="nomeTecnico" name="nomeTecnico" required />
-
-      <h3>Código, Número de Série, Nota Fiscal:</h3>
-      <table id="serialTable">
-        <thead>
-          <tr>
-            <th>Código</th>
-            <th>Número de Série</th>
-            <th>Nota Fiscal</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-
-      <div>
-        <input type="text" id="codigoPeca" placeholder="Código da Peça" />
-        <button onclick="openCameraPopup('codigoPeca')">Ler Código</button>
-      </div>
-
-      <div>
-        <input type="text" id="serialProxxi" placeholder="Número de Série" />
-        <button onclick="openCameraPopup('serialProxxi')">Ler Código</button>
-      </div>
-
-      <div>
-        <input type="text" id="notaFiscal" placeholder="Nota Fiscal" />
-        <button onclick="openCameraPopup('notaFiscal')">Ler Código</button>
-      </div>
-
-      <button type="button" onclick="addRow()">Adicionar</button>
-
-      <label for="assinatura">Assinatura Recebedor:</label>
-      <canvas id="signatureCanvas" width="300" height="150"></canvas>
-      <button type="button" onclick="clearSignature()">
-        Limpar Assinatura
-      </button>
-
-      <button type="button" onclick="generatePDF()">Gerar PDF</button>
-    </form>
-
-    <footer>
-      &copy; 2024 Diego Sakai & Cláudio Henrique. Todos os direitos reservados.
-    </footer>
-
-    <div id="cameraPopup" class="popup" style="display: none">
-      <div id="camera-preview" class="popup-content"></div>
-      <button onclick="closeCameraPopup()">Fechar</button>
+    <div>
+      <input type="text" id="codigoPeca" placeholder="Código da Peça" />
+      <button onclick="openCameraPopup('codigoPeca')">Ler Código</button>
     </div>
 
-    <script>
-      const { jsPDF } = window.jspdf;
+    <div>
+      <input type="text" id="serialProxxi" placeholder="Número de Série" />
+      <button onclick="openCameraPopup('serialProxxi')">Ler Código</button>
+    </div>
 
-      var canvas = document.getElementById("signatureCanvas");
-      var ctx = canvas.getContext("2d");
-      var isDrawing = false;
+    <div>
+      <input type="text" id="notaFiscal" placeholder="Nota Fiscal" />
+      <button onclick="openCameraPopup('notaFiscal')">Ler Código</button>
+    </div>
 
-      function addRow() {
-        var codigoPecaInput = document.getElementById("codigoPeca");
-        var serialInput = document.getElementById("serialProxxi");
-        var notaFiscalInput = document.getElementById("notaFiscal");
-        var serialTable = document
-          .getElementById("serialTable")
-          .getElementsByTagName("tbody")[0];
+    <button type="button" onclick="addRow()">Adicionar</button>
 
-        if (
-          codigoPecaInput.value !== "" &&
-          serialInput.value !== "" &&
-          notaFiscalInput.value !== ""
-        ) {
-          var newRow = serialTable.insertRow();
-          var codigoCell = newRow.insertCell(0);
-          var serialCell = newRow.insertCell(1);
-          var notaFiscalCell = newRow.insertCell(2);
-          var actionsCell = newRow.insertCell(3);
+    <label for="assinatura">Assinatura Recebedor:</label>
+    <canvas id="signatureCanvas" width="300" height="150"></canvas>
+    <button type="button" onclick="clearSignature()">Limpar Assinatura</button>
 
-          codigoCell.textContent = codigoPecaInput.value;
-          serialCell.textContent = serialInput.value;
-          notaFiscalCell.textContent = notaFiscalInput.value;
+    <button type="button" onclick="generatePDF()">Gerar PDF</button>
+  </form>
 
-          var editButton = document.createElement("button");
-          editButton.textContent = "Editar";
-          editButton.onclick = function () {
-            editRow(newRow);
-          };
-          actionsCell.appendChild(editButton);
+  <footer>&copy; 2024 Diego Sakai & Cláudio Henrique. Todos os direitos reservados.</footer>
 
-          var deleteButton = document.createElement("button");
-          deleteButton.textContent = "Excluir";
-          deleteButton.onclick = function () {
-            deleteRow(newRow);
-          };
-          actionsCell.appendChild(deleteButton);
+  <div id="cameraPopup" class="popup" style="display: none;">
+    <div id="camera-preview" class="popup-content"></div>
+    <button onclick="closeCameraPopup()">Fechar</button>
+  </div>
 
-          codigoPecaInput.value = "";
-          serialInput.value = "";
-          notaFiscalInput.value = "";
-        }
+  <script>
+    const { jsPDF } = window.jspdf;
+
+    var canvas = document.getElementById("signatureCanvas");
+    var ctx = canvas.getContext("2d");
+    var isDrawing = false;
+
+    function addRow() {
+      var codigoPecaInput = document.getElementById("codigoPeca");
+      var serialInput = document.getElementById("serialProxxi");
+      var notaFiscalInput = document.getElementById("notaFiscal");
+      var serialTable = document
+        .getElementById("serialTable")
+        .getElementsByTagName("tbody")[0];
+
+      if (
+        codigoPecaInput.value !== "" &&
+        serialInput.value !== "" &&
+        notaFiscalInput.value !== ""
+      ) {
+        var newRow = serialTable.insertRow();
+        var codigoCell = newRow.insertCell(0);
+        var serialCell = newRow.insertCell(1);
+        var notaFiscalCell = newRow.insertCell(2);
+        var actionsCell = newRow.insertCell(3);
+
+        codigoCell.textContent = codigoPecaInput.value;
+        serialCell.textContent = serialInput.value;
+        notaFiscalCell.textContent = notaFiscalInput.value;
+
+        var editButton = document.createElement("button");
+        editButton.textContent = "Editar";
+        editButton.onclick = function () {
+          editRow(newRow);
+        };
+        actionsCell.appendChild(editButton);
+
+        var deleteButton = document.createElement("button");
+        deleteButton.textContent = "Excluir";
+        deleteButton.onclick = function () {
+          deleteRow(newRow);
+        };
+        actionsCell.appendChild(deleteButton);
+
+        codigoPecaInput.value = "";
+        serialInput.value = "";
+        notaFiscalInput.value = "";
       }
+    }
 
-      function editRow(row) {
-        var cells = row.getElementsByTagName("td");
-        document.getElementById("codigoPeca").value = cells[0].textContent;
-        document.getElementById("serialProxxi").value = cells[1].textContent;
-        document.getElementById("notaFiscal").value = cells[2].textContent;
+    function editRow(row) {
+      var cells = row.getElementsByTagName("td");
+      document.getElementById("codigoPeca").value = cells[0].textContent;
+      document.getElementById("serialProxxi").value = cells[1].textContent;
+      document.getElementById("notaFiscal").value = cells[2].textContent;
 
-        row.parentNode.removeChild(row);
-      }
+      row.parentNode.removeChild(row);
+    }
 
-      function deleteRow(row) {
-        row.parentNode.removeChild(row);
-      }
+    function deleteRow(row) {
+      row.parentNode.removeChild(row);
+    }
 
-      function clearSignature() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-      }
+    function clearSignature() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
 
-      function openCameraPopup(inputId) {
-        var popup = document.getElementById("cameraPopup");
-        popup.style.display = "block";
+    function openCameraPopup(inputId) {
+      var popup = document.getElementById("cameraPopup");
+      popup.style.display = "block";
 
-        Quagga.init(
-          {
-            inputStream: {
-              name: "Live",
-              type: "LiveStream",
-              target: document.querySelector("#camera-preview"),
-              constraints: {
-                facingMode: "environment", // ou "user" para câmera frontal
-              },
+      Quagga.init(
+        {
+          inputStream: {
+            name: "Live",
+            type: "LiveStream",
+            target: document.querySelector("#camera-preview"),
+            constraints: {
+              facingMode: "environment", // ou "user" para câmera frontal
             },
-            locator: {
-              patchSize: "medium",
-              halfSample: true,
-            },
-            numOfWorkers: navigator.hardwareConcurrency,
-            decoder: {
-              readers: ["code_128_reader", "ean_reader"],
-            },
-            locate: true,
           },
-          function (err) {
-            if (err) {
-              console.error(err);
-              return;
-            }
-            console.log("Initialization finished. Ready to start");
-            Quagga.start();
+          locator: {
+            patchSize: "medium",
+            halfSample: true,
+          },
+          numOfWorkers: navigator.hardwareConcurrency,
+          decoder: {
+            readers: ["code_128_reader", "ean_reader"],
+          },
+          locate: true,
+        },
+        function (err) {
+          if (err) {
+            console.error(err);
+            return;
           }
-        );
-
-        Quagga.onDetected(function (result) {
-          var code = result.codeResult.code;
-          document.getElementById(inputId).value = code;
-          closeCameraPopup();
-        });
-      }
-
-      function closeCameraPopup() {
-        var popup = document.getElementById("cameraPopup");
-        popup.style.display = "none";
-        Quagga.stop();
-      }
-
-      function generatePDF() {
-        var doc = new jsPDF();
-
-        // Título do PDF
-        doc.setFontSize(20);
-        doc.text("Formulário de Entrega de Peças", 105, 20, {
-          align: "center",
-        });
-
-        // Dados do formulário
-        var formData = new FormData(document.getElementById("deliveryForm"));
-        var formDataObject = {};
-        formData.forEach(function (value, key) {
-          formDataObject[key] = value;
-        });
-
-        var tableData = [];
-        var rows = document
-          .getElementById("serialTable")
-          .getElementsByTagName("tbody")[0].rows;
-        for (var i = 0; i < rows.length; i++) {
-          var rowData = [];
-          for (var j = 0; j < rows[i].cells.length; j++) {
-            rowData.push(rows[i].cells[j].textContent);
-          }
-          tableData.push(rowData);
+          console.log("Initialization finished. Ready to start");
+          Quagga.start();
         }
+      );
 
-        var tableColumnNames = ["Código", "Número de Série", "Nota Fiscal"];
-        doc.autoTable({
-          head: [tableColumnNames],
-          body: tableData,
-          startY: 40,
-        });
+      Quagga.onDetected(function (result) {
+        var code = result.codeResult.code;
+        document.getElementById(inputId).value = code;
+        closeCameraPopup();
+      });
+    }
 
-        // Assinatura
-        var imgData = canvas.toDataURL("image/png");
-        doc.addImage(
-          imgData,
-          "PNG",
-          15,
-          doc.autoTable.previous.finalY + 10,
-          180,
-          90
-        );
+    function closeCameraPopup() {
+      var popup = document.getElementById("cameraPopup");
+      popup.style.display = "none";
+      Quagga.stop();
+    }
 
-        // Salvar PDF
-        doc.save("form_entrega_pecas.pdf");
+    function generatePDF() {
+      var doc = new jsPDF();
+
+      // Título do PDF
+      doc.setFontSize(20);
+      doc.text("Formulário de Entrega de Peças", 105, 20, { align: "center" });
+
+      // Dados do formulário
+      var formData = new FormData(document.getElementById("deliveryForm"));
+      var formDataObject = {};
+      formData.forEach(function (value, key) {
+        formDataObject[key] = value;
+      });
+
+      var tableData = [];
+      var rows = document.getElementById("serialTable").getElementsByTagName("tbody")[0].rows;
+      for (var i = 0; i < rows.length; i++) {
+        var rowData = [];
+        for (var j = 0; j < rows[i].cells.length; j++) {
+          rowData.push(rows[i].cells[j].textContent);
+        }
+        tableData.push(rowData);
       }
-    </script>
-  </body>
+
+      var tableColumnNames = ["Código", "Número de Série", "Nota Fiscal"];
+      doc.autoTable({
+        head: [tableColumnNames],
+        body: tableData,
+        startY: 40,
+      });
+
+      // Assinatura
+      var imgData = canvas.toDataURL("image/png");
+      doc.addImage(imgData, "PNG", 15, doc.autoTable.previous.finalY + 10, 180, 90);
+
+      // Salvar PDF
+      doc.save("form_entrega_pecas.pdf");
+    }
+  </script>
+</body>
 </html>
