@@ -1,424 +1,392 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Formulário de Entrega de Peças</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/quagga/dist/quagga.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
-    <style>
-      /* Reset básico para remover margens e paddings padrão */
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Formulário de Entrega de Peças</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/quagga/dist/quagga.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
+  <style>
+    /* Reset básico para remover margens e paddings padrão */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-      body {
-        font-family: Arial, sans-serif;
-        background-color: #f5f5f5;
-        color: #333;
-        padding: 10px;
-      }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      color: #333;
+      padding: 10px;
+    }
 
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 1.5em;
+    }
+
+    form {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    input[type="text"],
+    input[type="date"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 1em;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    table {
+      width: 100%;
+      margin-bottom: 10px;
+      border-collapse: collapse;
+    }
+
+    table,
+    th,
+    td {
+      border: 1px solid #ccc;
+    }
+
+    th,
+    td {
+      padding: 8px;
+      text-align: left;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    @media (max-width: 375px) {
       h1 {
-        text-align: center;
-        margin-bottom: 20px;
-        font-size: 1.5em;
+        font-size: 1.2em;
       }
 
       form {
-        background: #fff;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      }
-
-      label {
-        display: block;
-        margin-bottom: 5px;
-        font-weight: bold;
+        padding: 15px;
       }
 
       input[type="text"],
       input[type="date"] {
-        width: 100%;
-        padding: 10px;
-        margin-bottom: 10px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
+        padding: 8px;
       }
 
       button {
-        display: block;
-        width: 100%;
-        padding: 10px;
-        margin-bottom: 10px;
-        background-color: #007bff;
-        color: #fff;
-        border: none;
-        border-radius: 4px;
-        font-size: 1em;
-        cursor: pointer;
-      }
-
-      button:hover {
-        background-color: #0056b3;
-      }
-
-      table {
-        width: 100%;
-        margin-bottom: 10px;
-        border-collapse: collapse;
-      }
-
-      table,
-      th,
-      td {
-        border: 1px solid #ccc;
-      }
-
-      th,
-      td {
         padding: 8px;
-        text-align: left;
+        font-size: 0.9em;
       }
 
       canvas {
-        display: block;
-        width: 100%;
-        margin-bottom: 10px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
+        height: 100px;
       }
+    }
 
-      @media (max-width: 375px) {
-        h1 {
-          font-size: 1.2em;
-        }
-
-        form {
-          padding: 15px;
-        }
-
-        input[type="text"],
-        input[type="date"] {
-          padding: 8px;
-        }
-
-        button {
-          padding: 8px;
-          font-size: 0.9em;
-        }
-
-        canvas {
-          height: 100px;
-        }
+    @media screen and (orientation: landscape) {
+      canvas {
+        width: 50%;
+        height: auto;
       }
+    }
 
-      @media screen and (orientation: landscape) {
-        canvas {
-          width: 50%;
-          height: auto;
-        }
+    footer {
+      text-align: center;
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #f0f0f0;
+      border-top: 1px solid #ccc;
+      font-size: 0.8em;
+    }
+  </style>
+</head>
+<body>
+  <h1>Formulário de Entrega de Peças</h1>
+
+  <form id="deliveryForm">
+    <label for="data">Data:</label>
+    <input type="date" id="data" name="data" required />
+
+    <label for="nomeRecebedor">Nome do Recebedor:</label>
+    <input type="text" id="nomeRecebedor" name="nomeRecebedor" required />
+
+    <label for="nomeTecnico">Nome Técnico:</label>
+    <input type="text" id="nomeTecnico" name="nomeTecnico" required />
+
+    <h3>Código, Número de Série, Nota Fiscal:</h3>
+    <table id="serialTable">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Número de Série</th>
+          <th>Nota Fiscal</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <div>
+      <input type="text" id="codigoPeca" placeholder="Código da Peça" />
+      <button type="button" onclick="iniciarLeituraCodigo('codigoPeca')">Ler Código</button>
+      <div id="camera-preview-codigoPeca" style="width: 100%; height: auto"></div>
+    </div>
+
+    <div>
+      <input type="text" id="serialProxxi" placeholder="Número de Série" />
+      <button type="button" onclick="iniciarLeituraCodigo('serialProxxi')">Ler Código</button>
+      <div id="camera-preview-serialProxxi" style="width: 100%; height: auto"></div>
+    </div>
+
+    <div>
+      <input type="text" id="notaFiscal" placeholder="Nota Fiscal" />
+      <button type="button" onclick="iniciarLeituraCodigo('notaFiscal')">Ler Código</button>
+      <div id="camera-preview-notaFiscal" style="width: 100%; height: auto"></div>
+    </div>
+
+    <button type="button" onclick="addRow()">Adicionar</button>
+
+    <label for="assinatura">Assinatura Recebedor:</label>
+    <canvas id="signatureCanvas" width="300" height="150"></canvas>
+    <button type="button" onclick="clearSignature()">Limpar Assinatura</button>
+
+    <button type="button" onclick="generatePDF()">Gerar PDF</button>
+  </form>
+
+  <footer>&copy; 2024 Diego Sakai & Cláudio Henrique. Todos os direitos reservados.</footer>
+
+  <script>
+    const { jsPDF } = window.jspdf;
+
+    var canvas = document.getElementById("signatureCanvas");
+    var ctx = canvas.getContext("2d");
+    var isDrawing = false;
+
+    function addRow() {
+      var codigoPecaInput = document.getElementById("codigoPeca");
+      var serialInput = document.getElementById("serialProxxi");
+      var notaFiscalInput = document.getElementById("notaFiscal");
+      var serialTable = document.getElementById("serialTable").getElementsByTagName("tbody")[0];
+
+      if (codigoPecaInput.value !== "" && serialInput.value !== "" && notaFiscalInput.value !== "") {
+        var newRow = serialTable.insertRow();
+        var codigoCell = newRow.insertCell(0);
+        var serialCell = newRow.insertCell(1);
+        var notaFiscalCell = newRow.insertCell(2);
+        var actionsCell = newRow.insertCell(3);
+
+        codigoCell.textContent = codigoPecaInput.value;
+        serialCell.textContent = serialInput.value;
+        notaFiscalCell.textContent = notaFiscalInput.value;
+
+        var editButton = document.createElement("button");
+        editButton.textContent = "Editar";
+        editButton.onclick = function () {
+          editRow(newRow);
+        };
+        actionsCell.appendChild(editButton);
+
+        var deleteButton = document.createElement("button");
+        deleteButton.textContent = "Excluir";
+        deleteButton.onclick = function () {
+          deleteRow(newRow);
+        };
+        actionsCell.appendChild(deleteButton);
+
+        codigoPecaInput.value = "";
+        serialInput.value = "";
+        notaFiscalInput.value = "";
       }
+    }
 
-      footer {
-        text-align: center;
-        margin-top: 20px;
-        padding: 10px;
-        background-color: #f0f0f0;
-        border-top: 1px solid #ccc;
-        font-size: 0.8em;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>Formulário de Entrega de Peças</h1>
+    function editRow(row) {
+      var cells = row.getElementsByTagName("td");
+      document.getElementById("codigoPeca").value = cells[0].textContent;
+      document.getElementById("serialProxxi").value = cells[1].textContent;
+      document.getElementById("notaFiscal").value = cells[2].textContent;
 
-    <form id="deliveryForm">
-      <label for="data">Data:</label>
-      <input type="date" id="data" name="data" required />
+      row.parentNode.removeChild(row);
+    }
 
-      <label for="nomeRecebedor">Nome do Recebedor:</label>
-      <input type="text" id="nomeRecebedor" name="nomeRecebedor" required />
+    function deleteRow(row) {
+      row.parentNode.removeChild(row);
+    }
 
-      <label for="nomeTecnico">Nome Técnico:</label>
-      <input type="text" id="nomeTecnico" name="nomeTecnico" required />
+    function clearSignature() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
 
-      <h3>Código, Número de Série, Nota Fiscal:</h3>
-      <table id="serialTable">
-        <thead>
-          <tr>
-            <th>Código</th>
-            <th>Número de Série</th>
-            <th>Nota Fiscal</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+    function iniciarLeituraCodigo(elementId) {
+      var cameraTarget = document.querySelector(`#camera-preview-${elementId}`);
 
-      <div>
-        <input type="text" id="codigoPeca" placeholder="Código da Peça" />
-        <button onclick="iniciarLeituraCodigo('codigoPeca')">Ler Código</button>
-        <div
-          id="camera-preview-codigoPeca"
-          style="width: 100%; height: auto"
-        ></div>
-      </div>
-
-      <div>
-        <input type="text" id="serialProxxi" placeholder="Número de Série" />
-        <button onclick="iniciarLeituraCodigo('serialProxxi')">
-          Ler Código
-        </button>
-        <div
-          id="camera-preview-serialProxxi"
-          style="width: 100%; height: auto"
-        ></div>
-      </div>
-
-      <div>
-        <input type="text" id="notaFiscal" placeholder="Nota Fiscal" />
-        <button onclick="iniciarLeituraCodigo('notaFiscal')">Ler Código</button>
-        <div
-          id="camera-preview-notaFiscal"
-          style="width: 100%; height: auto"
-        ></div>
-      </div>
-
-      <button type="button" onclick="addRow()">Adicionar</button>
-
-      <label for="assinatura">Assinatura Recebedor:</label>
-      <canvas id="signatureCanvas" width="300" height="150"></canvas>
-      <button type="button" onclick="clearSignature()">
-        Limpar Assinatura
-      </button>
-
-      <button type="button" onclick="generatePDF()">Gerar PDF</button>
-    </form>
-
-    <footer>
-      &copy; 2024 Diego Sakai & Cláudio Henrique. Todos os direitos reservados.
-    </footer>
-
-    <script>
-      const { jsPDF } = window.jspdf;
-
-      var canvas = document.getElementById("signatureCanvas");
-      var ctx = canvas.getContext("2d");
-      var isDrawing = false;
-
-      function addRow() {
-        var codigoPecaInput = document.getElementById("codigoPeca");
-        var serialInput = document.getElementById("serialProxxi");
-        var notaFiscalInput = document.getElementById("notaFiscal");
-        var serialTable = document
-          .getElementById("serialTable")
-          .getElementsByTagName("tbody")[0];
-
-        if (
-          codigoPecaInput.value !== "" &&
-          serialInput.value !== "" &&
-          notaFiscalInput.value !== ""
-        ) {
-          var newRow = serialTable.insertRow();
-          var codigoCell = newRow.insertCell(0);
-          var serialCell = newRow.insertCell(1);
-          var notaFiscalCell = newRow.insertCell(2);
-          var actionsCell = newRow.insertCell(3);
-
-          codigoCell.textContent = codigoPecaInput.value;
-          serialCell.textContent = serialInput.value;
-          notaFiscalCell.textContent = notaFiscalInput.value;
-
-          var editButton = document.createElement("button");
-          editButton.textContent = "Editar";
-          editButton.onclick = function () {
-            editRow(newRow);
-          };
-          actionsCell.appendChild(editButton);
-
-          var deleteButton = document.createElement("button");
-          deleteButton.textContent = "Excluir";
-          deleteButton.onclick = function () {
-            deleteRow(newRow);
-          };
-          actionsCell.appendChild(deleteButton);
-
-          codigoPecaInput.value = "";
-          serialInput.value = "";
-          notaFiscalInput.value = "";
-        }
-      }
-
-      function editRow(row) {
-        var cells = row.getElementsByTagName("td");
-        document.getElementById("codigoPeca").value = cells[0].textContent;
-        document.getElementById("serialProxxi").value = cells[1].textContent;
-        document.getElementById("notaFiscal").value = cells[2].textContent;
-
-        row.parentNode.removeChild(row);
-      }
-
-      function deleteRow(row) {
-        row.parentNode.removeChild(row);
-      }
-
-      function clearSignature() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-      }
-
-      function iniciarLeituraCodigo() {
-        Quagga.init(
-          {
-            inputStream: {
-              name: "Live",
-              type: "LiveStream",
-              target: document.querySelector("#camera-preview"),
-              constraints: {
-                facingMode: "environment", // ou "user" para câmera frontal
-              },
-            },
-            locator: {
-              patchSize: "medium",
-              halfSample: true,
-            },
-            decoder: {
-              readers: [
-                {
-                  format: "ean_reader",
-                  config: {
-                    supplements: ["ean_5_reader", "ean_2_reader"],
-                  },
-                },
-                "code_128_reader",
-                "code_39_reader",
-                "codabar_reader",
-              ],
+      Quagga.init(
+        {
+          inputStream: {
+            name: "Live",
+            type: "LiveStream",
+            target: cameraTarget,
+            constraints: {
+              facingMode: "environment", // ou "user" para câmera frontal
             },
           },
-          function (err) {
-            if (err) {
-              console.log(err);
-              return;
-            }
-            Quagga.start();
+          locator: {
+            patchSize: "medium",
+            halfSample: true,
+          },
+          decoder: {
+            readers: [
+              {
+                format: "ean_reader",
+                config: {
+                  supplements: ["ean_5_reader", "ean_2_reader"],
+                },
+              },
+              "code_128_reader",
+              "code_39_reader",
+              "codabar_reader",
+            ],
+          },
+        },
+        function (err) {
+          if (err) {
+            console.log(err);
+            return;
           }
-        );
-
-        Quagga.onDetected(function (result) {
-          var codigoLido = result.codeResult.code;
-          // Aqui você pode fazer o que desejar com o código lido, como preencher um campo de formulário
-          console.log("Código lido:", codigoLido);
-
-          // Parar a leitura após detectar um código
-          Quagga.stop();
-        });
-      }
-
-      function generatePDF() {
-        var doc = new jsPDF();
-        doc.text("Formulário de Entrega de Peças", 15, 15);
-
-        var formData = new FormData(document.getElementById("deliveryForm"));
-        var formObject = {};
-        formData.forEach(function (value, key) {
-          formObject[key] = value;
-        });
-
-        var columns = [
-          { title: "Código", dataKey: "codigo" },
-          { title: "Número de Série", dataKey: "numeroSerie" },
-          { title: "Nota Fiscal", dataKey: "notaFiscal" },
-        ];
-
-        var rows = [];
-        var tableData = document
-          .getElementById("serialTable")
-          .getElementsByTagName("tbody")[0]
-          .getElementsByTagName("tr");
-
-        for (var i = 0; i < tableData.length; i++) {
-          var rowData = {};
-          var tableCols = tableData[i].getElementsByTagName("td");
-          rowData["codigo"] = tableCols[0].textContent;
-          rowData["numeroSerie"] = tableCols[1].textContent;
-          rowData["notaFiscal"] = tableCols[2].textContent;
-          rows.push(rowData);
+          Quagga.start();
         }
+      );
 
-        doc.autoTable(columns, rows, { startY: 20 });
-        doc.save("form_entrega_pecas.pdf");
+      Quagga.onDetected(function (result) {
+        var codigoLido = result.codeResult.code;
+        console.log("Código lido:", codigoLido);
+
+        // Preencher o input correspondente com o código lido
+        document.getElementById(elementId).value = codigoLido;
+
+        // Parar a leitura após detectar um código
+        Quagga.stop();
+      });
+    }
+
+    function generatePDF() {
+      var doc = new jsPDF();
+      doc.text("Formulário de Entrega de Peças", 15, 15);
+
+      var formData = new FormData(document.getElementById("deliveryForm"));
+      var formObject = {};
+      formData.forEach(function (value, key) {
+        formObject[key] = value;
+      });
+
+      var columns = [
+        { title: "Código", dataKey: "codigo" },
+        { title: "Número de Série", dataKey: "numeroSerie" },
+        { title: "Nota Fiscal", dataKey: "notaFiscal" },
+      ];
+
+      var rows = [];
+      var tableData = document.getElementById("serialTable").getElementsByTagName("tbody")[0].getElementsByTagName("tr");
+
+      for (var i = 0; i < tableData.length; i++) {
+        var rowData = {};
+        var tableCols = tableData[i].getElementsByTagName("td");
+        rowData["codigo"] = tableCols[0].textContent;
+        rowData["numeroSerie"] = tableCols[1].textContent;
+        rowData["notaFiscal"] = tableCols[2].textContent;
+        rows.push(rowData);
       }
 
-      canvas.addEventListener("mousedown", startDrawing);
-      canvas.addEventListener("mousemove", draw);
-      canvas.addEventListener("mouseup", stopDrawing);
-      canvas.addEventListener("mouseout", stopDrawing);
-      canvas.addEventListener("touchstart", startDrawing);
-      canvas.addEventListener("touchmove", draw);
-      canvas.addEventListener("touchend", stopDrawing);
-      canvas.addEventListener("touchcancel", stopDrawing);
+      doc.autoTable(columns, rows, { startY: 20 });
+      doc.save("form_entrega_pecas.pdf");
+    }
 
-      function getTouchPos(canvasDom, touchEvent) {
-        var rect = canvasDom.getBoundingClientRect();
-        return {
-          x:
-            ((touchEvent.touches[0].clientX - rect.left) / rect.width) *
-            canvasDom.width,
-          y:
-            ((touchEvent.touches[0].clientY - rect.top) / rect.height) *
-            canvasDom.height,
-        };
-      }
+    canvas.addEventListener("mousedown", startDrawing);
+    canvas.addEventListener("mousemove", draw);
+    canvas.addEventListener("mouseup", stopDrawing);
+    canvas.addEventListener("mouseout", stopDrawing);
+    canvas.addEventListener("touchstart", startDrawing);
+    canvas.addEventListener("touchmove", draw);
+    canvas.addEventListener("touchend", stopDrawing);
+    canvas.addEventListener("touchcancel", stopDrawing);
 
-      function startDrawing(event) {
-        isDrawing = true;
+    function getTouchPos(canvasDom, touchEvent) {
+      var rect = canvasDom.getBoundingClientRect();
+      return {
+        x: ((touchEvent.touches[0].clientX - rect.left) / rect.width) * canvasDom.width,
+        y: ((touchEvent.touches[0].clientY - rect.top) / rect.height) * canvasDom.height,
+      };
+    }
+
+    function startDrawing(event) {
+      isDrawing = true;
+      var pos = event.type.includes("touch")
+        ? getTouchPos(canvas, event)
+        : {
+            x: ((event.clientX - canvas.offsetLeft) / canvas.clientWidth) * canvas.width,
+            y: ((event.clientY - canvas.offsetTop) / canvas.clientHeight) * canvas.height,
+          };
+      ctx.beginPath();
+      ctx.moveTo(pos.x, pos.y);
+      event.preventDefault();
+    }
+
+    function draw(event) {
+      if (isDrawing) {
         var pos = event.type.includes("touch")
           ? getTouchPos(canvas, event)
           : {
-              x:
-                ((event.clientX - canvas.offsetLeft) / canvas.clientWidth) *
-                canvas.width,
-              y:
-                ((event.clientY - canvas.offsetTop) / canvas.clientHeight) *
-                canvas.height,
+              x: ((event.clientX - canvas.offsetLeft) / canvas.clientWidth) * canvas.width,
+              y: ((event.clientY - canvas.offsetTop) / canvas.clientHeight) * canvas.height,
             };
-        ctx.beginPath();
-        ctx.moveTo(pos.x, pos.y);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
         event.preventDefault();
       }
+    }
 
-      function draw(event) {
-        if (isDrawing) {
-          var pos = event.type.includes("touch")
-            ? getTouchPos(canvas, event)
-            : {
-                x:
-                  ((event.clientX - canvas.offsetLeft) / canvas.clientWidth) *
-                  canvas.width,
-                y:
-                  ((event.clientY - canvas.offsetTop) / canvas.clientHeight) *
-                  canvas.height,
-              };
-          ctx.lineTo(pos.x, pos.y);
-          ctx.stroke();
-          event.preventDefault();
-        }
+    function stopDrawing(event) {
+      if (isDrawing) {
+        ctx.stroke();
+        ctx.closePath();
+        isDrawing = false;
       }
-
-      function stopDrawing(event) {
-        if (isDrawing) {
-          ctx.stroke();
-          ctx.closePath();
-          isDrawing = false;
-        }
-        event.preventDefault();
-      }
-    </script>
-  </body>
+      event.preventDefault();
+    }
+  </script>
+</body>
 </html>
