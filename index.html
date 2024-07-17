@@ -272,13 +272,13 @@
         ctx.clearRect(0, 0, canvas.width, canvas.height);
       }
 
-      function iniciarLeituraCodigo(idCampo) {
+      function iniciarLeituraCodigo() {
         Quagga.init(
           {
             inputStream: {
               name: "Live",
               type: "LiveStream",
-              target: document.querySelector(`#camera-preview-${idCampo}`),
+              target: document.querySelector("#camera-preview"),
               constraints: {
                 facingMode: "environment", // ou "user" para câmera frontal
               },
@@ -289,15 +289,15 @@
             },
             decoder: {
               readers: [
+                {
+                  format: "ean_reader",
+                  config: {
+                    supplements: ["ean_5_reader", "ean_2_reader"],
+                  },
+                },
                 "code_128_reader",
-                "ean_reader",
-                "ean_8_reader",
                 "code_39_reader",
-                "code_39_vin_reader",
                 "codabar_reader",
-                "upc_reader",
-                "upc_e_reader",
-                "i2of5_reader",
               ],
             },
           },
@@ -312,7 +312,8 @@
 
         Quagga.onDetected(function (result) {
           var codigoLido = result.codeResult.code;
-          document.getElementById(idCampo).value = codigoLido;
+          // Aqui você pode fazer o que desejar com o código lido, como preencher um campo de formulário
+          console.log("Código lido:", codigoLido);
 
           // Parar a leitura após detectar um código
           Quagga.stop();
