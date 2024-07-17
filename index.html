@@ -133,6 +133,25 @@
       border-top: 1px solid #ccc;
       font-size: 0.8em;
     }
+
+    .popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #fff;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+      display: none;
+    }
+
+    .popup-close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -163,20 +182,17 @@
 
     <div>
       <input type="text" id="codigoPeca" placeholder="Código da Peça" />
-      <button type="button" onclick="iniciarLeituraCodigo('codigoPeca')">Ler Código</button>
-      <div id="camera-preview-codigoPeca" style="width: 100%; height: auto"></div>
+      <button type="button" onclick="openBarcodeScanner('codigoPeca')">Ler Código</button>
     </div>
 
     <div>
       <input type="text" id="serialProxxi" placeholder="Número de Série" />
-      <button type="button" onclick="iniciarLeituraCodigo('serialProxxi')">Ler Código</button>
-      <div id="camera-preview-serialProxxi" style="width: 100%; height: auto"></div>
+      <button type="button" onclick="openBarcodeScanner('serialProxxi')">Ler Código</button>
     </div>
 
     <div>
       <input type="text" id="notaFiscal" placeholder="Nota Fiscal" />
-      <button type="button" onclick="iniciarLeituraCodigo('notaFiscal')">Ler Código</button>
-      <div id="camera-preview-notaFiscal" style="width: 100%; height: auto"></div>
+      <button type="button" onclick="openBarcodeScanner('notaFiscal')">Ler Código</button>
     </div>
 
     <button type="button" onclick="addRow()">Adicionar</button>
@@ -187,6 +203,11 @@
 
     <button type="button" onclick="generatePDF()">Gerar PDF</button>
   </form>
+
+  <div class="popup" id="barcodePopup">
+    <span class="popup-close" onclick="closeBarcodeScanner()">X</span>
+    <div id="barcodeScanner" style="width: 100%; height: 100%"></div>
+  </div>
 
   <footer>&copy; 2024 Diego Sakai & Cláudio Henrique. Todos os direitos reservados.</footer>
 
@@ -251,25 +272,41 @@
       ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
 
-    function iniciarLeituraCodigo(elementId) {
-      var cameraTarget = document.querySelector(`#camera-preview-${elementId}`);
+    function openBarcodeScanner(elementId) {
+      var popup = document.getElementById("barcodePopup");
+      var scannerContainer = document.getElementById("barcodeScanner");
+      var cameraTarget = document.createElement("div");
+      cameraTarget.id = `camera-${elementId}`;
+      scannerContainer.innerHTML = "";
+      scannerContainer.appendChild(cameraTarget);
+      popup.style.display = "block";
 
       Quagga.init(
         {
           inputStream: {
             name: "Live",
+            target: `#camera-${elementId}`,
             type: "LiveStream",
-            target: cameraTarget,
             constraints: {
-              facingMode: "environment", // ou "user" para câmera frontal
+              width: 480,
+              height: 320,
+              facingMode: "environment",
             },
-          },
-          locator: {
-            patchSize: "medium",
-            halfSample: true,
           },
           decoder: {
             readers: [
+              "ean_reader",
+              "ean_8_reader",
+              "code_39_reader",
+              "code_39_vin_reader",
+              "codabar_reader",
+              "upc_reader",
+              "upc_e_reader",
+              "i2of5_reader",
+              "2of5_reader",
+              "code_93_reader",
+              "code_128_reader",
+              "code_128_reader",
               {
                 format: "ean_reader",
                 config: {
@@ -300,7 +337,14 @@
 
         // Parar a leitura após detectar um código
         Quagga.stop();
+        closeBarcodeScanner();
       });
+    }
+
+    function closeBarcodeScanner() {
+      var popup = document.getElementById("barcodePopup");
+      popup.style.display = "none";
+      Quagga.stop();
     }
 
     function generatePDF() {
