@@ -134,22 +134,41 @@
       font-size: 0.8em;
     }
 
-    .popup {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background-color: #fff;
-      padding: 20px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-      z-index: 1000;
-      display: none;
+    /* Estilos para o modal */
+    .modal {
+      display: none; /* Inicialmente oculto */
+      position: fixed; /* Fixa a posição na tela */
+      z-index: 1; /* Posiciona na frente dos outros elementos */
+      left: 0;
+      top: 0;
+      width: 100%; /* Cobertura total da tela */
+      height: 100%;
+      overflow: auto; /* Rolagem se necessário */
+      background-color: rgba(0, 0, 0, 0.5); /* Fundo semi-transparente */
     }
 
-    .popup-close {
-      position: absolute;
-      top: 10px;
-      right: 10px;
+    .modal-content {
+      background-color: #fefefe;
+      margin: 15% auto; /* Centraliza verticalmente */
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%; /* Largura do modal */
+      max-width: 400px; /* Largura máxima */
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      position: relative;
+    }
+
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+      color: black;
+      text-decoration: none;
       cursor: pointer;
     }
   </style>
@@ -182,17 +201,17 @@
 
     <div>
       <input type="text" id="codigoPeca" placeholder="Código da Peça" />
-      <button type="button" onclick="openBarcodeScanner('codigoPeca')">Ler Código</button>
+      <button onclick="abrirModalCamera('codigoPeca')">Ler Código</button>
     </div>
 
     <div>
       <input type="text" id="serialProxxi" placeholder="Número de Série" />
-      <button type="button" onclick="openBarcodeScanner('serialProxxi')">Ler Código</button>
+      <button onclick="abrirModalCamera('serialProxxi')">Ler Código</button>
     </div>
 
     <div>
       <input type="text" id="notaFiscal" placeholder="Nota Fiscal" />
-      <button type="button" onclick="openBarcodeScanner('notaFiscal')">Ler Código</button>
+      <button onclick="abrirModalCamera('notaFiscal')">Ler Código</button>
     </div>
 
     <button type="button" onclick="addRow()">Adicionar</button>
@@ -204,12 +223,17 @@
     <button type="button" onclick="generatePDF()">Gerar PDF</button>
   </form>
 
-  <div class="popup" id="barcodePopup">
-    <span class="popup-close" onclick="closeBarcodeScanner()">X</span>
-    <div id="barcodeScanner" style="width: 100%; height: 100%"></div>
+  <!-- Modal de câmera -->
+  <div id="cameraModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="fecharModalCamera()">&times;</span>
+      <div id="camera-preview" style="width: 100%; height: auto;"></div>
+    </div>
   </div>
 
-  <footer>&copy; 2024 Diego Sakai & Cláudio Henrique. Todos os direitos reservados.</footer>
+  <footer>
+    &copy; 2024 Diego Sakai & Cláudio Henrique. Todos os direitos reservados.
+  </footer>
 
   <script>
     const { jsPDF } = window.jspdf;
@@ -222,9 +246,15 @@
       var codigoPecaInput = document.getElementById("codigoPeca");
       var serialInput = document.getElementById("serialProxxi");
       var notaFiscalInput = document.getElementById("notaFiscal");
-      var serialTable = document.getElementById("serialTable").getElementsByTagName("tbody")[0];
+      var serialTable = document
+        .getElementById("serialTable")
+        .getElementsByTagName("tbody")[0];
 
-      if (codigoPecaInput.value !== "" && serialInput.value !== "" && notaFiscalInput.value !== "") {
+      if (
+        codigoPecaInput.value !== "" &&
+        serialInput.value !== "" &&
+        notaFiscalInput.value !== ""
+      ) {
         var newRow = serialTable.insertRow();
         var codigoCell = newRow.insertCell(0);
         var serialCell = newRow.insertCell(1);
@@ -252,16 +282,21 @@
         codigoPecaInput.value = "";
         serialInput.value = "";
         notaFiscalInput.value = "";
+      } else {
+        alert("Preencha todos os campos antes de adicionar.");
       }
     }
 
     function editRow(row) {
-      var cells = row.getElementsByTagName("td");
-      document.getElementById("codigoPeca").value = cells[0].textContent;
-      document.getElementById("serialProxxi").value = cells[1].textContent;
-      document.getElementById("notaFiscal").value = cells[2].textContent;
+      var codigoPecaInput = document.getElementById("codigoPeca");
+      var serialInput = document.getElementById("serialProxxi");
+      var notaFiscalInput = document.getElementById("notaFiscal");
 
-      row.parentNode.removeChild(row);
+      codigoPecaInput.value = row.cells[0].textContent;
+      serialInput.value = row.cells[1].textContent;
+      notaFiscalInput.value = row.cells[2].textContent;
+
+      deleteRow(row);
     }
 
     function deleteRow(row) {
@@ -272,41 +307,74 @@
       ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
 
-    function openBarcodeScanner(elementId) {
-      var popup = document.getElementById("barcodePopup");
-      var scannerContainer = document.getElementById("barcodeScanner");
-      var cameraTarget = document.createElement("div");
-      cameraTarget.id = `camera-${elementId}`;
-      scannerContainer.innerHTML = "";
-      scannerContainer.appendChild(cameraTarget);
-      popup.style.display = "block";
+    function generatePDF() {
+      var doc = new jsPDF();
+
+      doc.setFontSize(18);
+      doc.text("Formulário de Entrega de Peças", 14, 22);
+
+      doc.setFontSize(12);
+      doc.text(`Data: ${document.getElementById("data").value}`, 14, 32);
+      doc.text(
+        `Nome do Recebedor: ${document.getElementById("nomeRecebedor").value}`,
+        14,
+        42
+      );
+      doc.text(
+        `Nome Técnico: ${document.getElementById("nomeTecnico").value}`,
+        14,
+        52
+      );
+
+      var tableData = [];
+      var rows = document
+        .getElementById("serialTable")
+        .getElementsByTagName("tbody")[0]
+        .getElementsByTagName("tr");
+
+      for (var i = 0; i < rows.length; i++) {
+        var rowData = [];
+        for (var j = 0; j < rows[i].cells.length - 1; j++) {
+          rowData.push(rows[i].cells[j].textContent);
+        }
+        tableData.push(rowData);
+      }
+
+      doc.autoTable({
+        startY: 60,
+        head: [["Código", "Número de Série", "Nota Fiscal"]],
+        body: tableData,
+      });
+
+      var imgData = canvas.toDataURL("image/png");
+      doc.addImage(imgData, "PNG", 14, doc.previousAutoTable.finalY + 10, 80, 40);
+
+      doc.save("formulario_entrega_pecas.pdf");
+    }
+
+    // Modal de câmera
+    function abrirModalCamera(targetInputId) {
+      var modal = document.getElementById("cameraModal");
+      modal.style.display = "block";
+
+      var inputElement = document.getElementById(targetInputId);
 
       Quagga.init(
         {
           inputStream: {
             name: "Live",
-            target: `#camera-${elementId}`,
             type: "LiveStream",
+            target: document.querySelector("#camera-preview"),
             constraints: {
-              width: 480,
-              height: 320,
-              facingMode: "environment",
+              facingMode: "environment", // ou "user" para câmera frontal
             },
+          },
+          locator: {
+            patchSize: "medium",
+            halfSample: true,
           },
           decoder: {
             readers: [
-              "ean_reader",
-              "ean_8_reader",
-              "code_39_reader",
-              "code_39_vin_reader",
-              "codabar_reader",
-              "upc_reader",
-              "upc_e_reader",
-              "i2of5_reader",
-              "2of5_reader",
-              "code_93_reader",
-              "code_128_reader",
-              "code_128_reader",
               {
                 format: "ean_reader",
                 config: {
@@ -330,106 +398,17 @@
 
       Quagga.onDetected(function (result) {
         var codigoLido = result.codeResult.code;
-        console.log("Código lido:", codigoLido);
+        inputElement.value = codigoLido;
 
-        // Preencher o input correspondente com o código lido
-        document.getElementById(elementId).value = codigoLido;
-
-        // Parar a leitura após detectar um código
-        Quagga.stop();
-        closeBarcodeScanner();
+        // Fechar modal após detectar um código
+        fecharModalCamera();
       });
     }
 
-    function closeBarcodeScanner() {
-      var popup = document.getElementById("barcodePopup");
-      popup.style.display = "none";
+    function fecharModalCamera() {
+      var modal = document.getElementById("cameraModal");
+      modal.style.display = "none";
       Quagga.stop();
-    }
-
-    function generatePDF() {
-      var doc = new jsPDF();
-      doc.text("Formulário de Entrega de Peças", 15, 15);
-
-      var formData = new FormData(document.getElementById("deliveryForm"));
-      var formObject = {};
-      formData.forEach(function (value, key) {
-        formObject[key] = value;
-      });
-
-      var columns = [
-        { title: "Código", dataKey: "codigo" },
-        { title: "Número de Série", dataKey: "numeroSerie" },
-        { title: "Nota Fiscal", dataKey: "notaFiscal" },
-      ];
-
-      var rows = [];
-      var tableData = document.getElementById("serialTable").getElementsByTagName("tbody")[0].getElementsByTagName("tr");
-
-      for (var i = 0; i < tableData.length; i++) {
-        var rowData = {};
-        var tableCols = tableData[i].getElementsByTagName("td");
-        rowData["codigo"] = tableCols[0].textContent;
-        rowData["numeroSerie"] = tableCols[1].textContent;
-        rowData["notaFiscal"] = tableCols[2].textContent;
-        rows.push(rowData);
-      }
-
-      doc.autoTable(columns, rows, { startY: 20 });
-      doc.save("form_entrega_pecas.pdf");
-    }
-
-    canvas.addEventListener("mousedown", startDrawing);
-    canvas.addEventListener("mousemove", draw);
-    canvas.addEventListener("mouseup", stopDrawing);
-    canvas.addEventListener("mouseout", stopDrawing);
-    canvas.addEventListener("touchstart", startDrawing);
-    canvas.addEventListener("touchmove", draw);
-    canvas.addEventListener("touchend", stopDrawing);
-    canvas.addEventListener("touchcancel", stopDrawing);
-
-    function getTouchPos(canvasDom, touchEvent) {
-      var rect = canvasDom.getBoundingClientRect();
-      return {
-        x: ((touchEvent.touches[0].clientX - rect.left) / rect.width) * canvasDom.width,
-        y: ((touchEvent.touches[0].clientY - rect.top) / rect.height) * canvasDom.height,
-      };
-    }
-
-    function startDrawing(event) {
-      isDrawing = true;
-      var pos = event.type.includes("touch")
-        ? getTouchPos(canvas, event)
-        : {
-            x: ((event.clientX - canvas.offsetLeft) / canvas.clientWidth) * canvas.width,
-            y: ((event.clientY - canvas.offsetTop) / canvas.clientHeight) * canvas.height,
-          };
-      ctx.beginPath();
-      ctx.moveTo(pos.x, pos.y);
-      event.preventDefault();
-    }
-
-    function draw(event) {
-      if (isDrawing) {
-        var pos = event.type.includes("touch")
-          ? getTouchPos(canvas, event)
-          : {
-              x: ((event.clientX - canvas.offsetLeft) / canvas.clientWidth) * canvas.width,
-              y: ((event.clientY - canvas.offsetTop) / canvas.clientHeight) * canvas.height,
-            };
-        ctx.lineTo(pos.x, pos.y);
-        ctx.stroke();
-        event.preventDefault();
-      }
-    }
-
-    function stopDrawing(event) {
-      if (isDrawing) {
-        ctx.stroke();
-        ctx.closePath();
-        isDrawing = false;
-      }
-      event.preventDefault();
     }
   </script>
 </body>
