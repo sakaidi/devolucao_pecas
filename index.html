@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Formulário de Entrega de Peças</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
   <style>
     /* Reset básico para remover margens e paddings padrão */
@@ -161,40 +162,27 @@
 
     <div>
       <input type="text" id="codigoPeca" placeholder="Código da Peça" />
-      <button onclick="iniciarLeituraCodigo('codigoPeca')">Ler Código</button>
-      <div
-        id="camera-preview-codigoPeca"
-        style="width: 100%; height: auto"
-      ></div>
+      <button type="button" onclick="iniciarLeituraCodigo('codigoPeca')">Ler Código</button>
+      <div id="camera-preview-codigoPeca" style="width: 100%; height: auto"></div>
     </div>
 
     <div>
       <input type="text" id="serialProxxi" placeholder="Número de Série" />
-      <button onclick="iniciarLeituraCodigo('serialProxxi')">
-        Ler Código
-      </button>
-      <div
-        id="camera-preview-serialProxxi"
-        style="width: 100%; height: auto"
-      ></div>
+      <button type="button" onclick="iniciarLeituraCodigo('serialProxxi')">Ler Código</button>
+      <div id="camera-preview-serialProxxi" style="width: 100%; height: auto"></div>
     </div>
 
     <div>
       <input type="text" id="notaFiscal" placeholder="Nota Fiscal" />
-      <button onclick="iniciarLeituraCodigo('notaFiscal')">Ler Código</button>
-      <div
-        id="camera-preview-notaFiscal"
-        style="width: 100%; height: auto"
-      ></div>
+      <button type="button" onclick="iniciarLeituraCodigo('notaFiscal')">Ler Código</button>
+      <div id="camera-preview-notaFiscal" style="width: 100%; height: auto"></div>
     </div>
 
     <button type="button" onclick="addRow()">Adicionar</button>
 
     <label for="assinatura">Assinatura Recebedor:</label>
     <canvas id="signatureCanvas" width="300" height="150"></canvas>
-    <button type="button" onclick="limparAssinatura()">
-      Limpar Assinatura
-    </button>
+    <button type="button" onclick="limparAssinatura()">Limpar Assinatura</button>
 
     <button type="button" onclick="gerarPDF()">Gerar PDF</button>
   </form>
@@ -214,15 +202,9 @@
       var codigoPecaInput = document.getElementById("codigoPeca");
       var serialInput = document.getElementById("serialProxxi");
       var notaFiscalInput = document.getElementById("notaFiscal");
-      var serialTable = document
-        .getElementById("serialTable")
-        .getElementsByTagName("tbody")[0];
+      var serialTable = document.getElementById("serialTable").getElementsByTagName("tbody")[0];
 
-      if (
-        codigoPecaInput.value !== "" &&
-        serialInput.value !== "" &&
-        notaFiscalInput.value !== ""
-      ) {
+      if (codigoPecaInput.value !== "" && serialInput.value !== "" && notaFiscalInput.value !== "") {
         var newRow = serialTable.insertRow();
         var codigoCell = newRow.insertCell(0);
         var serialCell = newRow.insertCell(1);
@@ -289,7 +271,6 @@
           decoder: {
             readers: [
               "code_128_reader",
-              "ean_reader",
               "code_39_reader",
               "codabar_reader",
             ],
@@ -340,13 +321,19 @@
         formDataObject[key] = value;
       });
 
+      doc.setFontSize(12);
+      doc.text(`Data: ${formDataObject.data}`, 20, 40);
+      doc.text(`Nome do Recebedor: ${formDataObject.nomeRecebedor}`, 20, 50);
+      doc.text(`Nome Técnico: ${formDataObject.nomeTecnico}`, 20, 60);
+
+      // Tabela de Peças
       var tableData = [];
       var rows = document
         .getElementById("serialTable")
         .getElementsByTagName("tbody")[0].rows;
       for (var i = 0; i < rows.length; i++) {
         var rowData = [];
-        for (var j = 0; j < rows[i].cells.length; j++) {
+        for (var j = 0; j < rows[i].cells.length - 1; j++) {
           rowData.push(rows[i].cells[j].textContent);
         }
         tableData.push(rowData);
@@ -356,7 +343,7 @@
       doc.autoTable({
         head: [tableColumnNames],
         body: tableData,
-        startY: 40,
+        startY: 70,
       });
 
       // Assinatura
