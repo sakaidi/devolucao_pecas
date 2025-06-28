@@ -7,32 +7,19 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
-    /* Reset básico para remover margens e paddings padrão */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f5f5f5;
-      color: #333;
-      padding: 10px;
-    }
-
-    h1 {
-      text-align: center;
-      margin-bottom: 20px;
-      font-size: 1.5em;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background: #f5f5f5; color: #333; padding: 10px; }
+    h1 { text-align: center; margin-bottom: 20px; font-size: 1.5em; }
 
     form {
       background: #fff;
       padding: 20px;
       border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      max-width: 600px;
+      margin: auto;
     }
 
     label {
@@ -41,21 +28,34 @@
       font-weight: bold;
     }
 
-    input[type="text"],
-    input[type="date"] {
+    input[type="text"], input[type="date"] {
       width: 100%;
       padding: 10px;
-      margin-bottom: 10px;
       border: 1px solid #ccc;
       border-radius: 4px;
     }
 
+    .input-group {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .input-group input {
+      flex: 1 1 auto;
+    }
+
+    .input-group button {
+      flex: 0 0 auto;
+      padding: 10px;
+    }
+
     button {
-      display: block;
       width: 100%;
       padding: 10px;
       margin-bottom: 10px;
-      background-color: #007bff;
+      background: #007bff;
       color: #fff;
       border: none;
       border-radius: 4px;
@@ -63,74 +63,58 @@
       cursor: pointer;
     }
 
-    button:hover {
-      background-color: #0056b3;
-    }
+    button:hover { background: #0056b3; }
 
     table {
       width: 100%;
-      margin-bottom: 10px;
       border-collapse: collapse;
+      display: block;
+      overflow-x: auto;
+      white-space: nowrap;
+      margin-bottom: 10px;
     }
 
-    table,
-    th,
-    td {
+    table th, table td {
       border: 1px solid #ccc;
-    }
-
-    th,
-    td {
       padding: 8px;
       text-align: left;
     }
 
     canvas {
-      display: block;
       width: 100%;
-      margin-bottom: 10px;
+      max-width: 400px;
+      aspect-ratio: 2 / 1;
+      display: block;
+      margin: auto;
       border: 1px solid #ccc;
       border-radius: 4px;
     }
 
-    @media (max-width: 375px) {
-      h1 {
-        font-size: 1.2em;
-      }
-
-      form {
-        padding: 15px;
-      }
-
-      input[type="text"],
-      input[type="date"] {
-        padding: 8px;
-      }
-
-      button {
-        padding: 8px;
-        font-size: 0.9em;
-      }
-
-      canvas {
-        height: 100px;
-      }
-    }
-
-    @media screen and (orientation: landscape) {
-      canvas {
-        width: 50%;
-        height: auto;
-      }
+    #camera-preview-codigoPeca,
+    #camera-preview-serialProxxi,
+    #camera-preview-notaFiscal {
+      width: 100%;
+      max-width: 400px;
+      aspect-ratio: 1 / 1;
+      margin: auto;
     }
 
     footer {
       text-align: center;
       margin-top: 20px;
       padding: 10px;
-      background-color: #f0f0f0;
-      border-top: 1px solid #ccc;
+      background: #f0f0f0;
       font-size: 0.8em;
+    }
+
+    @media (max-width: 375px) {
+      h1 { font-size: 1.2em; }
+      form { padding: 15px; }
+      input, button { font-size: 0.9em; padding: 8px; }
+    }
+
+    @media (orientation: landscape) {
+      form { padding: 10px 30px; }
     }
   </style>
 </head>
@@ -160,23 +144,23 @@
       <tbody></tbody>
     </table>
 
-    <div>
+    <div class="input-group">
       <input type="text" id="codigoPeca" placeholder="Código da Peça" />
-      <button type="button" onclick="iniciarLeituraCodigo('codigoPeca')">Ler Código</button>
-      <div id="camera-preview-codigoPeca" style="width: 100%; height: auto"></div>
+      <button type="button" onclick="iniciarLeituraCodigo('codigoPeca')">📷 Ler</button>
     </div>
+    <div id="camera-preview-codigoPeca"></div>
 
-    <div>
+    <div class="input-group">
       <input type="text" id="serialProxxi" placeholder="Número de Série" />
-      <button type="button" onclick="iniciarLeituraCodigo('serialProxxi')">Ler Código</button>
-      <div id="camera-preview-serialProxxi" style="width: 100%; height: auto"></div>
+      <button type="button" onclick="iniciarLeituraCodigo('serialProxxi')">📷 Ler</button>
     </div>
+    <div id="camera-preview-serialProxxi"></div>
 
-    <div>
+    <div class="input-group">
       <input type="text" id="notaFiscal" placeholder="Nota Fiscal" />
-      <button type="button" onclick="iniciarLeituraCodigo('notaFiscal')">Ler Código</button>
-      <div id="camera-preview-notaFiscal" style="width: 100%; height: auto"></div>
+      <button type="button" onclick="iniciarLeituraCodigo('notaFiscal')">📷 Ler</button>
     </div>
+    <div id="camera-preview-notaFiscal"></div>
 
     <button type="button" onclick="addRow()">Adicionar</button>
 
@@ -187,177 +171,100 @@
     <button type="button" onclick="gerarPDF()">Gerar PDF</button>
   </form>
 
-  <footer>
-    &copy; 2024 Diego Sakai & Cláudio Henrique. Todos os direitos reservados.
-  </footer>
+  <footer>&copy; 2024 Diego Sakai & Cláudio Henrique. Todos os direitos reservados.</footer>
 
   <script>
     const { jsPDF } = window.jspdf;
-
     var canvas = document.getElementById("signatureCanvas");
     var ctx = canvas.getContext("2d");
     var isDrawing = false;
+    const leitoresAtivos = {};
+
+    function iniciarLeituraCodigo(idInput) {
+      const previewDiv = document.getElementById(`camera-preview-${idInput}`);
+      if (leitoresAtivos[idInput]) {
+        leitoresAtivos[idInput].stop();
+        leitoresAtivos[idInput].clear();
+      }
+
+      const html5QrCode = new Html5Qrcode(previewDiv.id);
+      leitoresAtivos[idInput] = html5QrCode;
+
+      Html5Qrcode.getCameras().then(devices => {
+        if (devices && devices.length) {
+          let cam = devices[0].id;
+          const backCam = devices.find(d => d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('traseira'));
+          if (backCam) cam = backCam.id;
+
+          html5QrCode.start(
+            cam,
+            { fps: 10, qrbox: { width: 250, height: 250 } },
+            decodedText => {
+              document.getElementById(idInput).value = decodedText;
+              html5QrCode.stop().then(() => {
+                html5QrCode.clear();
+                delete leitoresAtivos[idInput];
+              });
+            },
+            errorMsg => {}
+          );
+        } else {
+          alert("Nenhuma câmera encontrada.");
+        }
+      }).catch(err => {
+        alert("Erro ao acessar câmera: " + err);
+      });
+    }
 
     function addRow() {
-      var codigoPecaInput = document.getElementById("codigoPeca");
-      var serialInput = document.getElementById("serialProxxi");
-      var notaFiscalInput = document.getElementById("notaFiscal");
-      var serialTable = document.getElementById("serialTable").getElementsByTagName("tbody")[0];
-
-      if (codigoPecaInput.value !== "" && serialInput.value !== "" && notaFiscalInput.value !== "") {
-        var newRow = serialTable.insertRow();
-        var codigoCell = newRow.insertCell(0);
-        var serialCell = newRow.insertCell(1);
-        var notaFiscalCell = newRow.insertCell(2);
-        var actionsCell = newRow.insertCell(3);
-
-        codigoCell.textContent = codigoPecaInput.value;
-        serialCell.textContent = serialInput.value;
-        notaFiscalCell.textContent = notaFiscalInput.value;
-
-        var editButton = document.createElement("button");
-        editButton.textContent = "Editar";
-        editButton.onclick = function () {
-          editarLinha(newRow);
-        };
-        actionsCell.appendChild(editButton);
-
-        var deleteButton = document.createElement("button");
-        deleteButton.textContent = "Excluir";
-        deleteButton.onclick = function () {
-          excluirLinha(newRow);
-        };
-        actionsCell.appendChild(deleteButton);
-
-        codigoPecaInput.value = "";
-        serialInput.value = "";
-        notaFiscalInput.value = "";
+      var c = document.getElementById("codigoPeca").value;
+      var s = document.getElementById("serialProxxi").value;
+      var n = document.getElementById("notaFiscal").value;
+      if (c && s && n) {
+        var row = document.getElementById("serialTable").getElementsByTagName("tbody")[0].insertRow();
+        row.insertCell(0).textContent = c;
+        row.insertCell(1).textContent = s;
+        row.insertCell(2).textContent = n;
+        var actions = row.insertCell(3);
+        var e = document.createElement("button"); e.textContent = "Editar"; e.onclick = () => editarLinha(row); actions.appendChild(e);
+        var d = document.createElement("button"); d.textContent = "Excluir"; d.onclick = () => excluirLinha(row); actions.appendChild(d);
+        document.getElementById("codigoPeca").value = "";
+        document.getElementById("serialProxxi").value = "";
+        document.getElementById("notaFiscal").value = "";
       }
     }
 
     function editarLinha(linha) {
-      var celulas = linha.getElementsByTagName("td");
-      document.getElementById("codigoPeca").value = celulas[0].textContent;
-      document.getElementById("serialProxxi").value = celulas[1].textContent;
-      document.getElementById("notaFiscal").value = celulas[2].textContent;
-
-      linha.parentNode.removeChild(linha);
+      document.getElementById("codigoPeca").value = linha.cells[0].textContent;
+      document.getElementById("serialProxxi").value = linha.cells[1].textContent;
+      document.getElementById("notaFiscal").value = linha.cells[2].textContent;
+      linha.remove();
     }
 
-    function excluirLinha(linha) {
-      linha.parentNode.removeChild(linha);
-    }
+    function excluirLinha(linha) { linha.remove(); }
 
-    function limparAssinatura() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
-
-    function iniciarLeituraCodigo(idInput) {
-      Quagga.init(
-        {
-          inputStream: {
-            name: "Live",
-            type: "LiveStream",
-            target: document.querySelector(`#camera-preview-${idInput}`),
-            constraints: {
-              facingMode: "environment", // ou "user" para câmera frontal
-            },
-          },
-          locator: {
-            patchSize: "medium",
-            halfSample: true,
-          },
-          numOfWorkers: navigator.hardwareConcurrency,
-          decoder: {
-            readers: [
-              "code_128_reader",
-              "code_39_reader",
-              "codabar_reader",
-            ],
-          },
-          locate: true,
-        },
-        function (err) {
-          if (err) {
-            console.error(err);
-            return;
-          }
-          console.log("Inicialização concluída. Pronto para iniciar");
-          Quagga.start();
-        }
-      );
-
-      Quagga.onDetected(function (result) {
-        var codigo = result.codeResult.code;
-        document.getElementById(idInput).value = codigo;
-        fecharPopupCamera();
-      });
-    }
-
-    function abrirPopupCamera() {
-      var popup = document.getElementById("popupCamera");
-      popup.style.display = "block";
-    }
-
-    function fecharPopupCamera() {
-      var popup = document.getElementById("popupCamera");
-      popup.style.display = "none";
-      Quagga.stop();
-    }
+    function limparAssinatura() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
 
     function gerarPDF() {
       var doc = new jsPDF();
-
-      // Título do PDF
-      doc.setFontSize(20);
-      doc.text("Formulário de Entrega de Peças", 105, 20, {
-        align: "center",
-      });
-
-      // Dados do formulário
-      var formData = new FormData(document.getElementById("deliveryForm"));
-      var formDataObject = {};
-      formData.forEach(function (value, key) {
-        formDataObject[key] = value;
-      });
-
+      doc.setFontSize(20).text("Formulário de Entrega de Peças", 105, 20, { align: "center" });
       doc.setFontSize(12);
-      doc.text(`Data: ${formDataObject.data}`, 20, 40);
-      doc.text(`Nome do Recebedor: ${formDataObject.nomeRecebedor}`, 20, 50);
-      doc.text(`Nome Técnico: ${formDataObject.nomeTecnico}`, 20, 60);
+      doc.text(`Data: ${document.getElementById("data").value}`, 20, 40);
+      doc.text(`Nome do Recebedor: ${document.getElementById("nomeRecebedor").value}`, 20, 50);
+      doc.text(`Nome Técnico: ${document.getElementById("nomeTecnico").value}`, 20, 60);
 
-      // Tabela de Peças
       var tableData = [];
-      var rows = document
-        .getElementById("serialTable")
-        .getElementsByTagName("tbody")[0].rows;
+      var rows = document.getElementById("serialTable").getElementsByTagName("tbody")[0].rows;
       for (var i = 0; i < rows.length; i++) {
-        var rowData = [];
-        for (var j = 0; j < rows[i].cells.length - 1; j++) {
-          rowData.push(rows[i].cells[j].textContent);
-        }
-        tableData.push(rowData);
+        tableData.push([
+          rows[i].cells[0].textContent,
+          rows[i].cells[1].textContent,
+          rows[i].cells[2].textContent
+        ]);
       }
-
-      var tableColumnNames = ["Código", "Número de Série", "Nota Fiscal"];
-      doc.autoTable({
-        head: [tableColumnNames],
-        body: tableData,
-        startY: 70,
-      });
-
-      // Assinatura
+      doc.autoTable({ head: [["Código", "Número de Série", "Nota Fiscal"]], body: tableData, startY: 70 });
       var imgData = canvas.toDataURL("image/png");
-      doc.addImage(
-        imgData,
-        "PNG",
-        15,
-        doc.autoTable.previous.finalY + 10,
-        180,
-        90
-      );
-
-      // Salvar PDF
+      doc.addImage(imgData, "PNG", 15, doc.autoTable.previous.finalY + 10, 180, 90);
       doc.save("form_entrega_pecas.pdf");
     }
 
@@ -370,61 +277,16 @@
     canvas.addEventListener("touchend", stopDrawing);
     canvas.addEventListener("touchcancel", stopDrawing);
 
-    function getTouchPos(canvasDom, touchEvent) {
-      var rect = canvasDom.getBoundingClientRect();
+    function getPos(e) {
+      var r = canvas.getBoundingClientRect();
       return {
-        x:
-          ((touchEvent.touches[0].clientX - rect.left) / rect.width) *
-          canvasDom.width,
-        y:
-          ((touchEvent.touches[0].clientY - rect.top) / rect.height) *
-          canvasDom.height,
+        x: ((e.clientX || e.touches[0].clientX) - r.left) / r.width * canvas.width,
+        y: ((e.clientY || e.touches[0].clientY) - r.top) / r.height * canvas.height
       };
     }
-
-    function startDrawing(event) {
-      isDrawing = true;
-      var pos = event.type.includes("touch")
-        ? getTouchPos(canvas, event)
-        : {
-            x:
-              ((event.clientX - canvas.offsetLeft) / canvas.clientWidth) *
-              canvas.width,
-            y:
-              ((event.clientY - canvas.offsetTop) / canvas.clientHeight) *
-              canvas.height,
-          };
-      ctx.beginPath();
-      ctx.moveTo(pos.x, pos.y);
-      event.preventDefault();
-    }
-
-    function draw(event) {
-      if (isDrawing) {
-        var pos = event.type.includes("touch")
-          ? getTouchPos(canvas, event)
-          : {
-              x:
-                ((event.clientX - canvas.offsetLeft) / canvas.clientWidth) *
-                canvas.width,
-              y:
-                ((event.clientY - canvas.offsetTop) / canvas.clientHeight) *
-                canvas.height,
-            };
-        ctx.lineTo(pos.x, pos.y);
-        ctx.stroke();
-        event.preventDefault();
-      }
-    }
-
-    function stopDrawing(event) {
-      if (isDrawing) {
-        ctx.stroke();
-        ctx.closePath();
-        isDrawing = false;
-      }
-      event.preventDefault();
-    }
+    function startDrawing(e) { isDrawing = true; var p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); e.preventDefault(); }
+    function draw(e) { if (!isDrawing) return; var p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); e.preventDefault(); }
+    function stopDrawing(e) { if (isDrawing) { ctx.stroke(); ctx.closePath(); isDrawing = false; } e.preventDefault(); }
   </script>
 </body>
 </html>
