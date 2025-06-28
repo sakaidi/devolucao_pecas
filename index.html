@@ -10,14 +10,27 @@
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: Arial, sans-serif; background: #f5f5f5; color: #333; padding: 10px; }
-    h1 { text-align: center; margin-bottom: 20px; font-size: 1.5em; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #121212;
+      color: #e0e0e0;
+      padding: 10px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 1.5em;
+    }
 
     form {
-      background: #fff;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
       padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
       max-width: 600px;
       margin: auto;
     }
@@ -28,11 +41,19 @@
       font-weight: bold;
     }
 
-    input[type="text"], input[type="date"] {
+    input[type="text"],
+    input[type="date"] {
       width: 100%;
       padding: 10px;
-      border: 1px solid #ccc;
+      margin-bottom: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 4px;
+    }
+
+    input::placeholder {
+      color: #bbb;
     }
 
     .input-group {
@@ -49,53 +70,60 @@
     .input-group button {
       flex: 0 0 auto;
       padding: 10px;
+      background: rgba(0, 123, 255, 0.7);
+      border: none;
+      border-radius: 4px;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .input-group button:hover {
+      background: rgba(0, 123, 255, 1);
     }
 
     button {
       width: 100%;
       padding: 10px;
-      margin-bottom: 10px;
-      background: #007bff;
-      color: #fff;
+      background: rgba(0, 123, 255, 0.7);
       border: none;
       border-radius: 4px;
-      font-size: 1em;
+      color: #fff;
       cursor: pointer;
+      margin-bottom: 10px;
     }
 
-    button:hover { background: #0056b3; }
+    button:hover {
+      background: rgba(0, 123, 255, 1);
+    }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      display: block;
-      overflow-x: auto;
-      white-space: nowrap;
       margin-bottom: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
-    table th, table td {
-      border: 1px solid #ccc;
+    th, td {
+      border: 1px solid rgba(255, 255, 255, 0.1);
       padding: 8px;
-      text-align: left;
     }
 
     canvas {
       width: 100%;
       max-width: 400px;
-      aspect-ratio: 2 / 1;
+      aspect-ratio: 2/1;
       display: block;
       margin: auto;
-      border: 1px solid #ccc;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 4px;
     }
 
     #camera-preview-codigoPeca,
-    #camera-preview-serialProxxi,
-    #camera-preview-notaFiscal {
+    #camera-preview-serialProxxi {
       width: 100%;
       max-width: 400px;
-      aspect-ratio: 1 / 1;
+      aspect-ratio: 1/1;
       margin: auto;
     }
 
@@ -103,24 +131,18 @@
       text-align: center;
       margin-top: 20px;
       padding: 10px;
-      background: #f0f0f0;
       font-size: 0.8em;
+      color: #aaa;
     }
 
     @media (max-width: 375px) {
       h1 { font-size: 1.2em; }
-      form { padding: 15px; }
       input, button { font-size: 0.9em; padding: 8px; }
-    }
-
-    @media (orientation: landscape) {
-      form { padding: 10px 30px; }
     }
   </style>
 </head>
 <body>
   <h1>Formulário de Entrega de Peças</h1>
-
   <form id="deliveryForm">
     <label for="data">Data:</label>
     <input type="date" id="data" name="data" required />
@@ -145,22 +167,20 @@
     </table>
 
     <div class="input-group">
-      <input type="text" id="codigoPeca" placeholder="Código da Peça" />
+      <input type="text" id="codigoPeca" placeholder="Código da Peça" oninput="maiusculo(this)" />
       <button type="button" onclick="iniciarLeituraCodigo('codigoPeca')">📷 Ler</button>
     </div>
     <div id="camera-preview-codigoPeca"></div>
 
     <div class="input-group">
-      <input type="text" id="serialProxxi" placeholder="Número de Série" />
+      <input type="text" id="serialProxxi" placeholder="Número de Série" inputmode="numeric" pattern="[0-9]*" oninput="apenasNumeros(this)" />
       <button type="button" onclick="iniciarLeituraCodigo('serialProxxi')">📷 Ler</button>
     </div>
     <div id="camera-preview-serialProxxi"></div>
 
     <div class="input-group">
-      <input type="text" id="notaFiscal" placeholder="Nota Fiscal" />
-      <button type="button" onclick="iniciarLeituraCodigo('notaFiscal')">📷 Ler</button>
+      <input type="text" id="notaFiscal" placeholder="Nota Fiscal" inputmode="numeric" pattern="[0-9]*" oninput="apenasNumeros(this)" />
     </div>
-    <div id="camera-preview-notaFiscal"></div>
 
     <button type="button" onclick="addRow()">Adicionar</button>
 
@@ -171,7 +191,7 @@
     <button type="button" onclick="gerarPDF()">Gerar PDF</button>
   </form>
 
-  <footer>&copy; 2024 Diego Sakai & Cláudio Henrique. Todos os direitos reservados.</footer>
+  <footer>&copy; 2024 Diego Sakai &amp; Cláudio Henrique. Todos os direitos reservados.</footer>
 
   <script>
     const { jsPDF } = window.jspdf;
@@ -179,6 +199,9 @@
     var ctx = canvas.getContext("2d");
     var isDrawing = false;
     const leitoresAtivos = {};
+
+    function maiusculo(el) { el.value = el.value.toUpperCase(); }
+    function apenasNumeros(el) { el.value = el.value.replace(/\D/g, ""); }
 
     function iniciarLeituraCodigo(idInput) {
       const previewDiv = document.getElementById(`camera-preview-${idInput}`);
@@ -205,8 +228,7 @@
                 html5QrCode.clear();
                 delete leitoresAtivos[idInput];
               });
-            },
-            errorMsg => {}
+            }
           );
         } else {
           alert("Nenhuma câmera encontrada.");
@@ -249,9 +271,22 @@
       var doc = new jsPDF();
       doc.setFontSize(20).text("Formulário de Entrega de Peças", 105, 20, { align: "center" });
       doc.setFontSize(12);
-      doc.text(`Data: ${document.getElementById("data").value}`, 20, 40);
-      doc.text(`Nome do Recebedor: ${document.getElementById("nomeRecebedor").value}`, 20, 50);
-      doc.text(`Nome Técnico: ${document.getElementById("nomeTecnico").value}`, 20, 60);
+
+      var dataEntrega = document.getElementById("data").value;
+      if (!dataEntrega) {
+        const hoje = new Date();
+        const ano = hoje.getFullYear();
+        const mes = String(hoje.getMonth() + 1).padStart(2, "0");
+        const dia = String(hoje.getDate()).padStart(2, "0");
+        dataEntrega = `${ano}-${mes}-${dia}`;
+      }
+
+      var nomeRecebedor = document.getElementById("nomeRecebedor").value;
+      var nomeTecnico = document.getElementById("nomeTecnico").value;
+
+      doc.text(`Data: ${dataEntrega}`, 20, 40);
+      doc.text(`Nome do Recebedor: ${nomeRecebedor}`, 20, 50);
+      doc.text(`Nome Técnico: ${nomeTecnico}`, 20, 60);
 
       var tableData = [];
       var rows = document.getElementById("serialTable").getElementsByTagName("tbody")[0].rows;
@@ -262,10 +297,25 @@
           rows[i].cells[2].textContent
         ]);
       }
-      doc.autoTable({ head: [["Código", "Número de Série", "Nota Fiscal"]], body: tableData, startY: 70 });
+
+      doc.autoTable({
+        head: [["Código", "Número de Série", "Nota Fiscal"]],
+        body: tableData,
+        startY: 70
+      });
+
       var imgData = canvas.toDataURL("image/png");
       doc.addImage(imgData, "PNG", 15, doc.autoTable.previous.finalY + 10, 180, 90);
-      doc.save("form_entrega_pecas.pdf");
+
+      // Nome do recebedor abaixo da assinatura
+      const posY = doc.autoTable.previous.finalY + 10 + 90 + 10;
+      doc.setFontSize(14);
+      doc.text(`Recebedor: ${nomeRecebedor}`, 15, posY);
+
+      let dataFormatada = dataEntrega.replace(/-/g, "");
+      let nomeArquivo = `entrega_de_pecas_${dataFormatada}.pdf`;
+
+      doc.save(nomeArquivo);
     }
 
     canvas.addEventListener("mousedown", startDrawing);
@@ -284,9 +334,28 @@
         y: ((e.clientY || e.touches[0].clientY) - r.top) / r.height * canvas.height
       };
     }
-    function startDrawing(e) { isDrawing = true; var p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); e.preventDefault(); }
-    function draw(e) { if (!isDrawing) return; var p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); e.preventDefault(); }
-    function stopDrawing(e) { if (isDrawing) { ctx.stroke(); ctx.closePath(); isDrawing = false; } e.preventDefault(); }
+    function startDrawing(e) {
+      isDrawing = true;
+      var p = getPos(e);
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y);
+      e.preventDefault();
+    }
+    function draw(e) {
+      if (!isDrawing) return;
+      var p = getPos(e);
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+      e.preventDefault();
+    }
+    function stopDrawing(e) {
+      if (isDrawing) {
+        ctx.stroke();
+        ctx.closePath();
+        isDrawing = false;
+      }
+      e.preventDefault();
+    }
   </script>
 </body>
 </html>
