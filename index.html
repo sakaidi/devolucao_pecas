@@ -33,6 +33,10 @@
       padding: 20px;
       max-width: 600px;
       margin: auto;
+      background-image: url('./proxxi_cover.jpeg');
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-size: contain;
     }
 
     label {
@@ -52,20 +56,17 @@
       border-radius: 4px;
     }
 
-    input::placeholder {
-      color: #bbb;
-    }
+    input::placeholder { color: #bbb; }
 
     .input-group {
       display: flex;
       gap: 5px;
       flex-wrap: wrap;
       margin-bottom: 10px;
+      align-items: center;
     }
 
-    .input-group input {
-      flex: 1 1 auto;
-    }
+    .input-group input { flex: 1 1 auto; }
 
     .input-group button {
       flex: 0 0 auto;
@@ -75,13 +76,12 @@
       border-radius: 4px;
       color: #fff;
       cursor: pointer;
+      min-width: 60px;
     }
 
-    .input-group button:hover {
-      background: rgba(0, 123, 255, 1);
-    }
+    .input-group button:hover { background: rgba(0, 123, 255, 1); }
 
-    button {
+    button[type="button"] {
       width: 100%;
       padding: 10px;
       background: rgba(0, 123, 255, 0.7);
@@ -92,9 +92,7 @@
       margin-bottom: 10px;
     }
 
-    button:hover {
-      background: rgba(0, 123, 255, 1);
-    }
+    button[type="button"]:hover { background: rgba(0, 123, 255, 1); }
 
     table {
       width: 100%;
@@ -119,12 +117,26 @@
       border-radius: 4px;
     }
 
-    #camera-preview-codigoPeca,
-    #camera-preview-serialProxxi {
+    .qr-container {
+      display: none; /* escondido inicialmente */
+      position: relative;
       width: 100%;
       max-width: 400px;
       aspect-ratio: 1/1;
       margin: auto;
+    }
+
+    .qr-bar-overlay {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: 100%;
+      height: 30px;
+      transform: translateY(-50%);
+      border: 2px dashed #00ff00;
+      box-sizing: border-box;
+      pointer-events: none;
+      z-index: 10;
     }
 
     footer {
@@ -138,6 +150,7 @@
     @media (max-width: 375px) {
       h1 { font-size: 1.2em; }
       input, button { font-size: 0.9em; padding: 8px; }
+      .input-group button { min-width: 50px; }
     }
   </style>
 </head>
@@ -154,7 +167,7 @@
     <input type="text" id="nomeTecnico" name="nomeTecnico" required />
 
     <h3>Código, Número de Série, Nota Fiscal:</h3>
-    <table id="serialTable">
+    <table id="serialTable" aria-label="Tabela de peças entregues">
       <thead>
         <tr>
           <th>Código</th>
@@ -167,25 +180,27 @@
     </table>
 
     <div class="input-group">
-      <input type="text" id="codigoPeca" placeholder="Código da Peça" oninput="maiusculo(this)" />
-      <button type="button" onclick="iniciarLeituraCodigo('codigoPeca')">📷 Ler</button>
+      <input type="text" id="codigoPeca" placeholder="Código da Peça" oninput="maiusculo(this)" aria-label="Código da Peça" />
+      <button type="button" onclick="iniciarLeituraCodigo('codigoPeca')" aria-label="Ler código da peça">📷 Ler</button>
+      <button type="button" onclick="pararLeitores()" aria-label="Desligar câmera do código da peça">❌ Desligar</button>
     </div>
-    <div id="camera-preview-codigoPeca"></div>
+    <div id="camera-preview-codigoPeca" class="qr-container" aria-live="polite" aria-atomic="true"></div>
 
     <div class="input-group">
-      <input type="text" id="serialProxxi" placeholder="Número de Série" inputmode="numeric" pattern="[0-9]*" oninput="apenasNumeros(this)" />
-      <button type="button" onclick="iniciarLeituraCodigo('serialProxxi')">📷 Ler</button>
+      <input type="text" id="serialProxxi" placeholder="Número de Série" inputmode="numeric" pattern="[0-9]*" oninput="apenasNumeros(this)" aria-label="Número de Série" />
+      <button type="button" onclick="iniciarLeituraCodigo('serialProxxi')" aria-label="Ler número de série">📷 Ler</button>
+      <button type="button" onclick="pararLeitores()" aria-label="Desligar câmera do número de série">❌ Desligar</button>
     </div>
-    <div id="camera-preview-serialProxxi"></div>
+    <div id="camera-preview-serialProxxi" class="qr-container" aria-live="polite" aria-atomic="true"></div>
 
     <div class="input-group">
-      <input type="text" id="notaFiscal" placeholder="Nota Fiscal" inputmode="numeric" pattern="[0-9]*" oninput="apenasNumeros(this)" />
+      <input type="text" id="notaFiscal" placeholder="Nota Fiscal" inputmode="numeric" pattern="[0-9]*" oninput="apenasNumeros(this)" aria-label="Nota Fiscal" />
     </div>
 
     <button type="button" onclick="addRow()">Adicionar</button>
 
     <label for="assinatura">Assinatura Recebedor:</label>
-    <canvas id="signatureCanvas" width="300" height="150"></canvas>
+    <canvas id="signatureCanvas" width="300" height="150" aria-label="Área para assinatura"></canvas>
     <button type="button" onclick="limparAssinatura()">Limpar Assinatura</button>
 
     <button type="button" onclick="gerarPDF()">Gerar PDF</button>
@@ -195,20 +210,48 @@
 
   <script>
     const { jsPDF } = window.jspdf;
+
     var canvas = document.getElementById("signatureCanvas");
     var ctx = canvas.getContext("2d");
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.lineWidth = 2;
+
     var isDrawing = false;
     const leitoresAtivos = {};
 
     function maiusculo(el) { el.value = el.value.toUpperCase(); }
     function apenasNumeros(el) { el.value = el.value.replace(/\D/g, ""); }
 
+    function pararLeitores() {
+      Object.keys(leitoresAtivos).forEach(id => {
+        leitoresAtivos[id].stop().then(() => {
+          leitoresAtivos[id].clear();
+          delete leitoresAtivos[id];
+          const previewDiv = document.getElementById(`camera-preview-${id}`);
+          if (previewDiv) previewDiv.style.display = "none";
+          const overlay = previewDiv.querySelector('.qr-bar-overlay');
+          if (overlay) overlay.remove();
+        }).catch(() => {
+          delete leitoresAtivos[id];
+          const previewDiv = document.getElementById(`camera-preview-${id}`);
+          if (previewDiv) previewDiv.style.display = "none";
+        });
+      });
+    }
+
     function iniciarLeituraCodigo(idInput) {
+      pararLeitores();
+
       const previewDiv = document.getElementById(`camera-preview-${idInput}`);
-      if (leitoresAtivos[idInput]) {
-        leitoresAtivos[idInput].stop();
-        leitoresAtivos[idInput].clear();
-      }
+      previewDiv.style.display = "block";
+
+      const oldOverlay = previewDiv.querySelector('.qr-bar-overlay');
+      if (oldOverlay) oldOverlay.remove();
+
+      const overlay = document.createElement('div');
+      overlay.className = 'qr-bar-overlay';
+      previewDiv.appendChild(overlay);
 
       const html5QrCode = new Html5Qrcode(previewDiv.id);
       leitoresAtivos[idInput] = html5QrCode;
@@ -221,39 +264,51 @@
 
           html5QrCode.start(
             cam,
-            { fps: 10, qrbox: { width: 250, height: 250 } },
+            { fps: 10, qrbox: { width: 250, height: 50 } },
             decodedText => {
               document.getElementById(idInput).value = decodedText;
-              html5QrCode.stop().then(() => {
-                html5QrCode.clear();
-                delete leitoresAtivos[idInput];
-              });
+              pararLeitores();
             }
-          );
+          ).catch(err => {
+            alert("Erro ao iniciar leitura: " + err);
+            pararLeitores();
+          });
         } else {
           alert("Nenhuma câmera encontrada.");
+          pararLeitores();
         }
       }).catch(err => {
         alert("Erro ao acessar câmera: " + err);
+        pararLeitores();
       });
     }
 
     function addRow() {
-      var c = document.getElementById("codigoPeca").value;
-      var s = document.getElementById("serialProxxi").value;
-      var n = document.getElementById("notaFiscal").value;
-      if (c && s && n) {
-        var row = document.getElementById("serialTable").getElementsByTagName("tbody")[0].insertRow();
-        row.insertCell(0).textContent = c;
-        row.insertCell(1).textContent = s;
-        row.insertCell(2).textContent = n;
-        var actions = row.insertCell(3);
-        var e = document.createElement("button"); e.textContent = "Editar"; e.onclick = () => editarLinha(row); actions.appendChild(e);
-        var d = document.createElement("button"); d.textContent = "Excluir"; d.onclick = () => excluirLinha(row); actions.appendChild(d);
-        document.getElementById("codigoPeca").value = "";
-        document.getElementById("serialProxxi").value = "";
-        document.getElementById("notaFiscal").value = "";
+      var c = document.getElementById("codigoPeca").value.trim();
+      var s = document.getElementById("serialProxxi").value.trim();
+      var n = document.getElementById("notaFiscal").value.trim();
+      if (!c || !s || !n) {
+        alert("Preencha Código, Número de Série e Nota Fiscal antes de adicionar.");
+        return;
       }
+      var row = document.getElementById("serialTable").getElementsByTagName("tbody")[0].insertRow();
+      row.insertCell(0).textContent = c;
+      row.insertCell(1).textContent = s;
+      row.insertCell(2).textContent = n;
+      var actions = row.insertCell(3);
+      var e = document.createElement("button");
+      e.textContent = "Editar";
+      e.setAttribute("aria-label", "Editar linha");
+      e.onclick = () => editarLinha(row);
+      actions.appendChild(e);
+      var d = document.createElement("button");
+      d.textContent = "Excluir";
+      d.setAttribute("aria-label", "Excluir linha");
+      d.onclick = () => excluirLinha(row);
+      actions.appendChild(d);
+      document.getElementById("codigoPeca").value = "";
+      document.getElementById("serialProxxi").value = "";
+      document.getElementById("notaFiscal").value = "";
     }
 
     function editarLinha(linha) {
@@ -268,6 +323,7 @@
     function limparAssinatura() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
 
     function gerarPDF() {
+      pararLeitores();
       var doc = new jsPDF();
       doc.setFontSize(20).text("Formulário de Entrega de Peças", 105, 20, { align: "center" });
       doc.setFontSize(12);
@@ -306,27 +362,17 @@
 
       var imgData = canvas.toDataURL("image/png");
       doc.addImage(imgData, "PNG", 15, doc.autoTable.previous.finalY + 10, 180, 90);
-
-      // Nome do recebedor abaixo da assinatura
       const posY = doc.autoTable.previous.finalY + 10 + 90 + 10;
       doc.setFontSize(14);
       doc.text(`Recebedor: ${nomeRecebedor}`, 15, posY);
 
       let dataFormatada = dataEntrega.replace(/-/g, "");
-      let nomeArquivo = `entrega_de_pecas_${dataFormatada}.pdf`;
+      let nomeArquivo = `entrega_${nomeTecnico}_${dataFormatada}.pdf`.replace(/\s+/g, "_").toLowerCase();
 
       doc.save(nomeArquivo);
     }
 
-    canvas.addEventListener("mousedown", startDrawing);
-    canvas.addEventListener("mousemove", draw);
-    canvas.addEventListener("mouseup", stopDrawing);
-    canvas.addEventListener("mouseout", stopDrawing);
-    canvas.addEventListener("touchstart", startDrawing);
-    canvas.addEventListener("touchmove", draw);
-    canvas.addEventListener("touchend", stopDrawing);
-    canvas.addEventListener("touchcancel", stopDrawing);
-
+    // Eventos para desenhar assinatura
     function getPos(e) {
       var r = canvas.getBoundingClientRect();
       return {
@@ -356,6 +402,15 @@
       }
       e.preventDefault();
     }
+
+    canvas.addEventListener("mousedown", startDrawing);
+    canvas.addEventListener("mousemove", draw);
+    canvas.addEventListener("mouseup", stopDrawing);
+    canvas.addEventListener("mouseout", stopDrawing);
+    canvas.addEventListener("touchstart", startDrawing);
+    canvas.addEventListener("touchmove", draw);
+    canvas.addEventListener("touchend", stopDrawing);
+    canvas.addEventListener("touchcancel", stopDrawing);
   </script>
 </body>
 </html>
